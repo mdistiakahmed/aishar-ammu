@@ -7,3 +7,33 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+# Aishar Ammu — আয়শার আম্মু
+
+Pregnancy, mother, and baby care web app. Default language is **Bengali** (`bn`). English is opt-in via the top-bar toggle.
+
+## Stack
+
+- Next.js App Router (see the Next.js block above), React 19, TypeScript, Tailwind CSS v4
+- Path alias: `@/*` → repo root
+
+## Layout and i18n
+
+- Shell: `components/app-shell.tsx` (top bar, mobile drawer / desktop sidebar, `components/site-footer.tsx`)
+- Copy: `lib/i18n.ts` — add every user-facing string to **both** `en` and `bn`
+- Locale: `components/language-provider.tsx` — default `bn`, persist `aishar-ammu-locale`
+- Do not hardcode UI copy in components
+- Fonts: Hind Siliguri (Latin + Bengali) and Fraunces in `app/layout.tsx`
+
+## UI conventions
+
+- Mobile first: 44px-class tap targets, stacked CTAs, drawer menu below `lg`
+- Warm palette: petal background, rose accents, sage for tool actions
+- Homepage: `components/home-page.tsx` — tools, then months 1–10 (mother + baby)
+- Care copy is general wellbeing only. Never present it as a diagnosis or a substitute for a doctor.
+
+## Do not
+
+- Remove or rewrite the Next.js agent-rules block above
+- Invent medical claims, drug doses, or treatment plans
+- Skip Bengali strings, or make English the default locale
