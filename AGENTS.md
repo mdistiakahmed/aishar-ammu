@@ -14,8 +14,11 @@ Pregnancy, mother, and baby care web app. Default language is **Bengali** (`bn`)
 
 ## Stack
 
-- Next.js App Router (see the Next.js block above), React 19, TypeScript, Tailwind CSS v4
+- vinext (Next.js App Router API on Vite), React 19, TypeScript, Tailwind CSS v4
+- Deploy to Cloudflare Workers with `@vinext/cloudflare` (`npm run deploy`)
+- Next.js remains installed for reference; use `npm run dev:next` only if needed
 - Path alias: `@/*` → repo root
+- Do not rewrite `next/*` imports — vinext shims them
 
 ## Layout and i18n
 
