@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/components/language-provider";
-import { LanguageToggle } from "@/components/language-toggle";
 import { SiteFooter } from "@/components/site-footer";
 import {
   BellIcon,
@@ -15,18 +13,18 @@ import {
   MonthsIcon,
   ScaleIcon,
 } from "@/components/icons";
+import { brand, brandBn, nav, taglineBn } from "@/lib/copy";
 
 const navItems = [
-  { href: "#home", key: "home" as const, icon: HomeIcon },
-  { href: "#monthly-care", key: "months" as const, icon: MonthsIcon },
-  { href: "#care-tools", key: "tools" as const, icon: CalendarIcon },
-  { href: "#tool-due-date", key: "dueDate" as const, icon: CalendarIcon },
-  { href: "#tool-doctor-visit", key: "doctorVisit" as const, icon: BellIcon },
-  { href: "#tool-expected-weight", key: "expectedWeight" as const, icon: ScaleIcon },
+  { href: "#home", label: nav.home, icon: HomeIcon },
+  { href: "#monthly-care", label: nav.months, icon: MonthsIcon },
+  { href: "#care-tools", label: nav.tools, icon: CalendarIcon },
+  { href: "#tool-due-date", label: nav.dueDate, icon: CalendarIcon },
+  { href: "#tool-doctor-visit", label: nav.doctorVisit, icon: BellIcon },
+  { href: "#tool-expected-weight", label: nav.expectedWeight, icon: ScaleIcon },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -44,24 +42,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-200 bg-white text-rose-800 shadow-sm lg:hidden"
             onClick={() => setOpen(true)}
-            aria-label={t.menu}
+            aria-label="Open menu"
           >
             <MenuIcon className="h-5 w-5" />
           </button>
 
-          <Link href="#home" className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
+          <Link href="/" className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
             <LogoMark className="h-10 w-10 shrink-0" />
             <span className="min-w-0">
-              <span className="block truncate text-[15px] font-semibold tracking-tight text-rose-950 sm:text-lg">
-                {t.brand} · {t.brandBn}
+              <span className="block truncate font-[family-name:var(--font-hind)] text-[15px] font-semibold tracking-tight text-rose-950 sm:text-lg">
+                {brand} · {brandBn}
               </span>
-              <span className="hidden truncate text-xs text-rose-800/80 sm:block">
-                {t.tagline}
+              <span className="hidden truncate font-[family-name:var(--font-hind)] text-xs text-rose-800/80 sm:block">
+                {taglineBn}
               </span>
             </span>
           </Link>
 
-          <LanguageToggle />
+          <Link
+            href="/login"
+            className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-rose-700 px-4 text-sm font-semibold text-white shadow-sm hover:bg-rose-800 sm:px-5"
+          >
+            Login
+          </Link>
         </div>
       </header>
 
@@ -69,7 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           className="fixed inset-0 z-40 bg-rose-950/35 lg:hidden"
-          aria-label={t.closeMenu}
+          aria-label="Close menu"
           onClick={() => setOpen(false)}
         />
       ) : null}
@@ -80,12 +83,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }`}
       >
         <div className="flex items-center justify-between border-b border-rose-100 px-4 py-4 lg:hidden">
-          <p className="font-semibold text-rose-950">{t.brandBn}</p>
+          <p className="min-w-0 truncate font-[family-name:var(--font-hind)] font-semibold text-rose-950">
+            {brand} · {brandBn}
+          </p>
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-2xl text-rose-800"
             onClick={() => setOpen(false)}
-            aria-label={t.closeMenu}
+            aria-label="Close menu"
           >
             <CloseIcon className="h-5 w-5" />
           </button>
@@ -96,13 +101,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             const Icon = item.icon;
             return (
               <Link
-                key={item.key}
+                key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className="flex min-h-12 items-center gap-3 rounded-2xl px-3 text-sm font-medium text-rose-950 hover:bg-rose-50"
               >
                 <Icon className="h-5 w-5 text-rose-700" />
-                {t.nav[item.key]}
+                {item.label}
               </Link>
             );
           })}

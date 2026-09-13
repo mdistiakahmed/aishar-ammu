@@ -100,6 +100,21 @@ export function HeartIcon({ className }: IconProps) {
   );
 }
 
+export function MailIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M4.2 7.2 12 12.4l7.8-5.2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function LogoMark({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 40 40" fill="none" aria-hidden="true">

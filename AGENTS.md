@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Aishar Ammu — আয়শার আম্মু
+# Aishar Ammu
 
-Pregnancy, mother, and baby care web app. Default language is **Bengali** (`bn`). English is opt-in via the top-bar toggle.
+Pregnancy, mother, and baby care web app. The UI is English only.
 
 ## Stack
 
@@ -20,13 +20,11 @@ Pregnancy, mother, and baby care web app. Default language is **Bengali** (`bn`)
 - Path alias: `@/*` → repo root
 - Do not rewrite `next/*` imports — vinext shims them
 
-## Layout and i18n
+## Layout
 
 - Shell: `components/app-shell.tsx` (top bar, mobile drawer / desktop sidebar, `components/site-footer.tsx`)
-- Copy: `lib/i18n.ts` — add every user-facing string to **both** `en` and `bn`
-- Locale: `components/language-provider.tsx` — default `bn`, persist `aishar-ammu-locale`
-- Do not hardcode UI copy in components
-- Fonts: Hind Siliguri (Latin + Bengali) and Fraunces in `app/layout.tsx`
+- Copy: `lib/copy.ts` for shared English strings
+- Fonts: Geist and Fraunces in `app/layout.tsx`
 
 ## UI conventions
 
@@ -39,4 +37,4 @@ Pregnancy, mother, and baby care web app. Default language is **Bengali** (`bn`)
 
 - Remove or rewrite the Next.js agent-rules block above
 - Invent medical claims, drug doses, or treatment plans
-- Skip Bengali strings, or make English the default locale
+- Add a language switcher or Bengali locale layer
