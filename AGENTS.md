@@ -22,15 +22,15 @@ Pregnancy, mother, and baby care web app. The UI is English only.
 
 ## Layout
 
-- Shell: `components/app-shell.tsx` (top bar, mobile drawer / desktop sidebar, `components/site-footer.tsx`)
-- Copy: `lib/copy.ts` for shared English strings
+- Shell: `components/app-shell.tsx` (top bar, mobile drawer / desktop sidebar, `components/Footer.tsx`)
+- Shared brand strings: `lib/constants.ts`
 - Fonts: Geist and Fraunces in `app/layout.tsx`
 
 ## UI conventions
 
 - Mobile first: 44px-class tap targets, stacked CTAs, drawer menu below `lg`
 - Warm palette: petal background, rose accents, sage for tool actions
-- Homepage: `components/home-page.tsx` — tools, then months 1–10 (mother + baby)
+- Homepage: `app/page.tsx`
 - Care copy is general wellbeing only. Never present it as a diagnosis or a substitute for a doctor.
 
 ## Do not

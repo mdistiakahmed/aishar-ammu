@@ -6,5 +6,13 @@
   "main": "vinext/server/app-router-entry",
   "assets": {
     "not_found_handling": "none"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "aishar-ammu",
+      "database_id": "68a31787-a9e2-4441-9fc1-dfa41747439d",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

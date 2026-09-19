@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Fraunces, Geist, Hind_Siliguri } from "next/font/google";
+import { Fraunces, Geist, Noto_Sans_Bengali } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 import "./globals.css";
 
 const geist = Geist({
@@ -8,9 +9,9 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-const hind = Hind_Siliguri({
-  variable: "--font-hind",
-  subsets: ["latin", "bengali"],
+const bengali = Noto_Sans_Bengali({
+  variable: "--font-bengali",
+  subsets: ["bengali"],
   weight: ["400", "500", "600", "700"],
 });
 
@@ -29,10 +30,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${fraunces.variable} ${hind.variable} h-full antialiased`}
+      className={`${geist.variable} ${fraunces.variable} ${bengali.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <AppShell>{children}</AppShell>
+        <AuthProvider>
+          <AppShell>{children}</AppShell>
+        </AuthProvider>
       </body>
     </html>
   );
