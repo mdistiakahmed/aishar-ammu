@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ProfileStatus } from "@/components/profile/ProfileStatus";
 import { api, type MeResponse } from "@/lib/api-client";
-import type { SessionUser } from "@/lib/user";
+import type { BabyGender, SessionUser } from "@/lib/user";
 import { formatWeightInput } from "@/lib/weights";
 
 export function ProfileBasicsForm({
@@ -36,6 +36,7 @@ export function ProfileBasicsForm({
         nextDoctorVisitDate: formData.get("nextDoctorVisitDate"),
         weightAtStartKg: formData.get("weightAtStartKg"),
         weightTodayKg: formData.get("weightTodayKg"),
+        babyGender: formData.get("babyGender"),
       }),
     });
     setPending(false);
@@ -52,52 +53,63 @@ export function ProfileBasicsForm({
   }
 
   return (
-    <form action={onSubmit} className={compact ? "space-y-3" : "space-y-5"}>
+    <form action={onSubmit} className={`min-w-0 ${compact ? "space-y-2.5" : "space-y-5"}`}>
       <ProfileStatus saved={saved} error={error} />
       <TextField
         id={`${idPrefix}-preferred-name`}
         name="preferredName"
         label="Preferred name"
         defaultValue={user.preferredName || user.name}
-        required
+        compact={compact}
       />
       <DateField
         id={`${idPrefix}-pregnancy-start`}
         name="pregnancyStartDate"
         label="Pregnancy start"
         defaultValue={user.pregnancyStartDate}
-        required
+        compact={compact}
       />
       <DateField
         id={`${idPrefix}-due-date`}
         name="dueDate"
         label="Due date"
         defaultValue={user.dueDate}
-        required
+        compact={compact}
       />
       <DateField
         id={`${idPrefix}-doctor-visit`}
         name="nextDoctorVisitDate"
         label="Next doctor visit"
         defaultValue={user.nextDoctorVisitDate}
+        compact={compact}
+      />
+      <GenderField
+        id={`${idPrefix}-baby-gender`}
+        name="babyGender"
+        label="Baby gender"
+        defaultValue={user.babyGender}
+        compact={compact}
       />
       <WeightField
         id={`${idPrefix}-weight-start`}
         name="weightAtStartKg"
         label="Weight at start (kg)"
         defaultValue={user.weightAtStartKg}
-        required
+        compact={compact}
       />
       <WeightField
         id={`${idPrefix}-weight-today`}
         name="weightTodayKg"
         label="Weight as of today (kg)"
         defaultValue={weightTodayKg}
+        compact={compact}
       />
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-rose-700 text-sm font-semibold text-white shadow-sm hover:bg-rose-800 disabled:opacity-70"
+        className={`inline-flex w-full items-center justify-center rounded-full bg-rose-700 text-sm font-semibold text-white shadow-sm hover:bg-rose-800 disabled:opacity-70 ${
+          compact ? "h-10" : "h-11 sm:h-12"
+        }`}
       >
         {pending ? "Saving…" : "Save profile"}
       </button>
@@ -105,21 +117,27 @@ export function ProfileBasicsForm({
   );
 }
 
+function fieldClass(compact: boolean) {
+  return compact
+    ? "mt-1.5 box-border h-10 w-full min-w-0 max-w-full rounded-xl border border-rose-200 bg-petal px-2.5 text-sm text-rose-950 outline-none focus:border-rose-400"
+    : "mt-2 box-border h-11 w-full min-w-0 max-w-full rounded-2xl border border-rose-200 bg-petal px-3 text-sm text-rose-950 outline-none focus:border-rose-400 sm:h-12 sm:px-4";
+}
+
 function TextField({
   id,
   name,
   label,
   defaultValue,
-  required = false,
+  compact,
 }: {
   id: string;
   name: string;
   label: string;
   defaultValue: string;
-  required?: boolean;
+  compact: boolean;
 }) {
   return (
-    <label htmlFor={id} className="block">
+    <label htmlFor={id} className="block min-w-0">
       <span className="text-sm font-semibold text-rose-950">{label}</span>
       <input
         id={id}
@@ -127,8 +145,7 @@ function TextField({
         type="text"
         maxLength={40}
         defaultValue={defaultValue}
-        required={required}
-        className="mt-2 h-12 w-full rounded-2xl border border-rose-200 bg-petal px-4 text-sm text-rose-950 outline-none focus:border-rose-400"
+        className={fieldClass(compact)}
       />
     </label>
   );
@@ -139,25 +156,55 @@ function DateField({
   name,
   label,
   defaultValue,
-  required = false,
+  compact,
 }: {
   id: string;
   name: string;
   label: string;
   defaultValue: string | null;
-  required?: boolean;
+  compact: boolean;
 }) {
   return (
-    <label htmlFor={id} className="block">
+    <label htmlFor={id} className="block min-w-0">
       <span className="text-sm font-semibold text-rose-950">{label}</span>
       <input
         id={id}
         name={name}
         type="date"
         defaultValue={defaultValue ?? ""}
-        required={required}
-        className="mt-2 h-12 w-full rounded-2xl border border-rose-200 bg-petal px-4 text-sm text-rose-950 outline-none focus:border-rose-400"
+        className={`${fieldClass(compact)} appearance-none`}
       />
+    </label>
+  );
+}
+
+function GenderField({
+  id,
+  name,
+  label,
+  defaultValue,
+  compact,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  defaultValue: BabyGender | null;
+  compact: boolean;
+}) {
+  return (
+    <label htmlFor={id} className="block min-w-0">
+      <span className="text-sm font-semibold text-rose-950">{label}</span>
+      <select
+        id={id}
+        name={name}
+        defaultValue={defaultValue ?? ""}
+        className={fieldClass(compact)}
+      >
+        <option value="">Not set</option>
+        <option value="girl">Girl</option>
+        <option value="boy">Boy</option>
+        <option value="unknown">Not known yet</option>
+      </select>
     </label>
   );
 }
@@ -167,16 +214,16 @@ function WeightField({
   name,
   label,
   defaultValue,
-  required = false,
+  compact,
 }: {
   id: string;
   name: string;
   label: string;
   defaultValue: number | null;
-  required?: boolean;
+  compact: boolean;
 }) {
   return (
-    <label htmlFor={id} className="block">
+    <label htmlFor={id} className="block min-w-0">
       <span className="text-sm font-semibold text-rose-950">{label}</span>
       <input
         id={id}
@@ -187,8 +234,7 @@ function WeightField({
         max={180}
         step={0.1}
         defaultValue={formatWeightInput(defaultValue)}
-        required={required}
-        className="mt-2 h-12 w-full rounded-2xl border border-rose-200 bg-petal px-4 text-sm text-rose-950 outline-none focus:border-rose-400"
+        className={fieldClass(compact)}
       />
     </label>
   );

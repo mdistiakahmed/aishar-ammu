@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import type { UserRecord } from "@/lib/user";
+import type { BabyGender, UserRecord } from "@/lib/user";
 import type { WeightLog } from "@/lib/weights";
 
 export type { UserRecord };
@@ -14,6 +14,7 @@ type UserRow = {
   next_doctor_visit_date: string | null;
   due_date: string | null;
   weight_at_start_kg: number | null;
+  baby_gender: string | null;
 };
 
 type WeightRow = {
@@ -21,7 +22,7 @@ type WeightRow = {
   weight_kg: number;
 };
 
-const USER_COLUMNS = `id, email, name, preferred_name, picture, pregnancy_start_date, next_doctor_visit_date, due_date, weight_at_start_kg`;
+const USER_COLUMNS = `id, email, name, preferred_name, picture, pregnancy_start_date, next_doctor_visit_date, due_date, weight_at_start_kg, baby_gender`;
 
 function getDb() {
   const db = env.DB;
@@ -72,6 +73,7 @@ export async function updateUserProfile(
     nextDoctorVisitDate: string | null;
     dueDate: string | null;
     weightAtStartKg: number | null;
+    babyGender: BabyGender | null;
   },
 ) {
   await getDb()
@@ -82,6 +84,7 @@ export async function updateUserProfile(
            next_doctor_visit_date = ?,
            due_date = ?,
            weight_at_start_kg = ?,
+           baby_gender = ?,
            updated_at = datetime('now')
        WHERE id = ?`,
     )
@@ -91,6 +94,7 @@ export async function updateUserProfile(
       profile.nextDoctorVisitDate,
       profile.dueDate,
       profile.weightAtStartKg,
+      profile.babyGender,
       userId,
     )
     .run();
@@ -228,7 +232,13 @@ function toUser(row: UserRow): UserRecord {
     nextDoctorVisitDate: row.next_doctor_visit_date,
     dueDate: row.due_date,
     weightAtStartKg: toKg(row.weight_at_start_kg),
+    babyGender: toBabyGender(row.baby_gender),
   };
+}
+
+function toBabyGender(value: string | null): BabyGender | null {
+  if (value === "girl" || value === "boy" || value === "unknown") return value;
+  return null;
 }
 
 function toKg(value: number | null) {

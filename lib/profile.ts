@@ -8,9 +8,10 @@ import {
   type UserRecord,
 } from "@/lib/db";
 import { utcToday } from "@/lib/pregnancy";
+import type { BabyGender } from "@/lib/user";
 import { parseOptionalWeightKg, parsePreferredName } from "@/lib/weights";
 
-export type ProfileError = "name" | "dates" | "weight";
+export type ProfileError = "name" | "dates" | "weight" | "gender";
 
 export type ParsedProfile =
   | { ok: false; error: ProfileError }
@@ -18,31 +19,77 @@ export type ParsedProfile =
       ok: true;
       profile: {
         preferredName: string;
-        pregnancyStartDate: string;
+        pregnancyStartDate: string | null;
         nextDoctorVisitDate: string | null;
-        dueDate: string;
-        weightAtStartKg: number;
+        dueDate: string | null;
+        weightAtStartKg: number | null;
+        babyGender: BabyGender | null;
       };
       weightTodayKg: number | null;
     };
 
-export function parseProfilePayload(body: Record<string, unknown> | null): ParsedProfile {
+function parseBabyGender(value: unknown): BabyGender | null | undefined {
+  if (value === undefined || value === null) return null;
+  const raw = String(value).trim().toLowerCase();
+  if (raw === "") return null;
+  if (raw === "girl" || raw === "boy" || raw === "unknown") return raw;
+  return undefined;
+}
+
+function parseDateOrEmpty(value: unknown): { ok: true; value: string | null } | { ok: false } {
+  const raw = String(value ?? "").trim();
+  if (!raw) return { ok: true, value: null };
+  const parsed = parseOptionalDate(raw);
+  if (!parsed) return { ok: false };
+  return { ok: true, value: parsed };
+}
+
+export function parseProfilePayload(
+  body: Record<string, unknown> | null,
+  existing: UserRecord,
+): ParsedProfile {
   if (!body) return { ok: false, error: "name" };
 
-  const preferredName = parsePreferredName(body.preferredName, "");
-  const pregnancyStartDate = parseOptionalDate(body.pregnancyStartDate);
-  const dueDate = parseOptionalDate(body.dueDate);
-  const nextDoctorVisitDate = parseOptionalDate(body.nextDoctorVisitDate);
-  const weightAtStartKg = parseOptionalWeightKg(body.weightAtStartKg);
+  const nameRaw = String(body.preferredName ?? "").trim();
+  let preferredName = existing.preferredName || existing.name;
+  if (nameRaw) {
+    const parsedName = parsePreferredName(body.preferredName, "");
+    if (!parsedName) return { ok: false, error: "name" };
+    preferredName = parsedName;
+  }
+
+  const pregnancyStart = parseDateOrEmpty(body.pregnancyStartDate);
+  if (!pregnancyStart.ok) return { ok: false, error: "dates" };
+  const due = parseDateOrEmpty(body.dueDate);
+  if (!due.ok) return { ok: false, error: "dates" };
+  const nextVisit = parseDateOrEmpty(body.nextDoctorVisitDate);
+  if (!nextVisit.ok) return { ok: false, error: "dates" };
+
+  const pregnancyStartDate = pregnancyStart.value ?? existing.pregnancyStartDate;
+  const dueDate = due.value ?? existing.dueDate;
+  // Empty next-visit field clears it; a filled value updates it.
+  const nextDoctorVisitDate = nextVisit.value;
+
+  const startWeightRaw = String(body.weightAtStartKg ?? "").trim();
+  let weightAtStartKg = existing.weightAtStartKg;
+  if (startWeightRaw) {
+    const parsedWeight = parseOptionalWeightKg(body.weightAtStartKg);
+    if (parsedWeight === null) return { ok: false, error: "weight" };
+    weightAtStartKg = parsedWeight;
+  }
+
+  const babyGenderParsed = parseBabyGender(body.babyGender);
+  if (babyGenderParsed === undefined) return { ok: false, error: "gender" };
+  // Empty gender clears it.
+  const babyGender = babyGenderParsed;
+
+  if (pregnancyStartDate && dueDate && pregnancyStartDate > dueDate) {
+    return { ok: false, error: "dates" };
+  }
+
   const todayRaw = body.weightTodayKg;
   const todayFilled = todayRaw !== undefined && todayRaw !== null && String(todayRaw).trim() !== "";
   const weightTodayKg = todayFilled ? parseOptionalWeightKg(todayRaw) : null;
-
-  if (!preferredName) return { ok: false, error: "name" };
-  if (!pregnancyStartDate || !dueDate || pregnancyStartDate > dueDate) {
-    return { ok: false, error: "dates" };
-  }
-  if (weightAtStartKg === null) return { ok: false, error: "weight" };
   if (todayFilled && weightTodayKg === null) return { ok: false, error: "weight" };
 
   return {
@@ -53,6 +100,7 @@ export function parseProfilePayload(body: Record<string, unknown> | null): Parse
       nextDoctorVisitDate,
       dueDate,
       weightAtStartKg,
+      babyGender,
     },
     weightTodayKg,
   };
@@ -81,11 +129,13 @@ export async function saveParsedProfile(
   parsed: Extract<ParsedProfile, { ok: true }>,
 ) {
   await updateUserProfile(user.id, parsed.profile);
-  await upsertMotherWeightLog(
-    user.id,
-    parsed.profile.pregnancyStartDate,
-    parsed.profile.weightAtStartKg,
-  );
+  if (parsed.profile.pregnancyStartDate && parsed.profile.weightAtStartKg !== null) {
+    await upsertMotherWeightLog(
+      user.id,
+      parsed.profile.pregnancyStartDate,
+      parsed.profile.weightAtStartKg,
+    );
+  }
   if (parsed.weightTodayKg !== null) {
     await upsertMotherWeightLog(user.id, utcToday(), parsed.weightTodayKg);
   }
@@ -101,6 +151,7 @@ export async function saveWeightLog(user: UserRecord, loggedOn: string, weightKg
       nextDoctorVisitDate: user.nextDoctorVisitDate,
       dueDate: user.dueDate,
       weightAtStartKg: weightKg,
+      babyGender: user.babyGender,
     });
   }
   return loadMe(user.id);
@@ -117,6 +168,7 @@ export async function removeWeightLog(user: UserRecord, loggedOn: string) {
       nextDoctorVisitDate: user.nextDoctorVisitDate,
       dueDate: user.dueDate,
       weightAtStartKg: startLog ? startLog.weightKg : user.weightAtStartKg,
+      babyGender: user.babyGender,
     });
   }
   return loadMe(user.id);

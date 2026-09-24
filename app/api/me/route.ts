@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest) {
   const auth = await requireBearer(request);
   if (!auth) return jsonError("unauthorized", 401);
 
-  const parsed = parseProfilePayload(await readJson(request));
+  const parsed = parseProfilePayload(await readJson(request), auth.user);
   if (!parsed.ok) {
     return jsonError(parsed.error, 400);
   }

@@ -1,8 +1,15 @@
 export function profileStatusMessage(saved?: string, error?: string) {
   if (saved === "1") return "Your profile was saved.";
-  if (error === "dates") return "Please enter valid dates. Start cannot be after due date.";
-  if (error === "weight") return "Enter a start weight between 30 kg and 180 kg.";
-  if (error === "name") return "Preferred name must be 40 characters or fewer.";
+  if (error === "dates") {
+    return "Enter valid dates, or leave blank to keep saved dates. Start cannot be after due date.";
+  }
+  if (error === "weight") {
+    return "Enter a weight between 30 kg and 180 kg, or leave blank to keep your saved value.";
+  }
+  if (error === "name") {
+    return "Preferred name must be 40 characters or fewer, or leave blank to keep your saved name.";
+  }
+  if (error === "gender") return "Choose girl, boy, or not known yet.";
   if (error === "db") return "We could not save your details. Please try again.";
   return null;
 }

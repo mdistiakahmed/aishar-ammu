@@ -1,3 +1,7 @@
+"use client";
+
+import { PregnancyDashPreview } from "@/components/homepage/PregnancyDashPreview";
+import { ProfileDetailsCollapsible } from "@/components/homepage/ProfileDetailsCollapsible";
 import { BabyAgePanel } from "@/components/homepage/dashboard/BabyAgePanel";
 import { BabyNamesPanel } from "@/components/homepage/dashboard/BabyNamesPanel";
 import { BabySizePanel } from "@/components/homepage/dashboard/BabySizePanel";
@@ -8,8 +12,8 @@ import { NextVisitPanel } from "@/components/homepage/dashboard/NextVisitPanel";
 import { ProgressPanel } from "@/components/homepage/dashboard/ProgressPanel";
 import { ThisWeekPanel } from "@/components/homepage/dashboard/ThisWeekPanel";
 import type { SessionUser } from "@/lib/user";
-import { buildPregnancySnapshot } from "@/lib/pregnancy";
-import type { WeightLog } from "@/lib/weights";
+import { buildPregnancySnapshot, utcToday } from "@/lib/pregnancy";
+import { weightOnDate, type WeightLog } from "@/lib/weights";
 
 export function HomePageForLoggedInUser({
   user,
@@ -20,9 +24,12 @@ export function HomePageForLoggedInUser({
 }) {
   const snapshot = buildPregnancySnapshot(user);
   const greeting = user.preferredName || user.name.split(" ")[0] || "there";
+  const weightTodayKg = weightOnDate(logs, utcToday());
 
   return (
     <div className="space-y-5">
+      <ProfileDetailsCollapsible user={user} weightTodayKg={weightTodayKg} />
+      <PregnancyDashPreview />
       <p className="px-1 text-2xl font-semibold text-rose-950 sm:text-3xl">Hello, {greeting}</p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <BabyWeightPanel snapshot={snapshot} startWeightKg={user.weightAtStartKg} logs={logs} />

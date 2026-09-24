@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { BookIcon, CloseIcon, HomeIcon, SparkleIcon } from "@/components/icons";
-import { ProfileBasicsForm } from "@/components/profile/ProfileBasicsForm";
 import type { SessionUser } from "@/lib/user";
 import { brand, brandBn } from "@/lib/constants";
 
@@ -17,12 +16,10 @@ export function Sidebar({
   user,
   open,
   onClose,
-  weightTodayKg = null,
 }: {
   user: SessionUser | null;
   open: boolean;
   onClose: () => void;
-  weightTodayKg?: number | null;
 }) {
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -61,7 +58,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+        <div className="min-w-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-3 py-4">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -80,22 +77,13 @@ export function Sidebar({
           </nav>
 
           {user ? (
-            <section className="space-y-3 rounded-2xl border border-rose-100 bg-petal p-3">
-              <h2 className="text-sm font-semibold text-rose-950">Your details</h2>
-              <ProfileBasicsForm
-                user={user}
-                idPrefix="sidebar"
-                compact
-                weightTodayKg={weightTodayKg}
-              />
-              <Link
-                href="/account"
-                onClick={onClose}
-                className="block text-center text-sm font-semibold text-rose-800 underline-offset-2 hover:underline"
-              >
-                Edit weight history
-              </Link>
-            </section>
+            <Link
+              href="/account"
+              onClick={onClose}
+              className="block rounded-2xl border border-rose-100 bg-petal px-3 py-3 text-center text-sm font-semibold text-rose-800 underline-offset-2 hover:underline"
+            >
+              Account & weight history
+            </Link>
           ) : null}
         </div>
       </aside>
