@@ -2,16 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { PausingGif } from "@/components/homepage/PausingGif";
 import { GuestDashCard } from "@/components/homepage/guest/GuestDashCard";
 import {
   CrescentIcon,
   PencilIcon,
   StethoscopeIcon,
 } from "@/components/homepage/guest/GuestDashIcons";
-import {
-  GuestBabyIllustration,
-  GuestProduceIllustration,
-} from "@/components/homepage/guest/GuestIllustrations";
+import { GuestProduceIllustration } from "@/components/homepage/guest/GuestIllustrations";
 import { babySizeAge, getBabySizeWeek } from "@/lib/baby-size";
 import { addUtcDays, buildPregnancySnapshot, utcToday } from "@/lib/pregnancy";
 
@@ -240,8 +238,8 @@ export function PregnancyDashPreview({
           </div>
 
           <div className="flex shrink-0 items-center justify-center py-0.5">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#fff6f1] shadow-inner ring-4 ring-white sm:h-36 sm:w-36 lg:h-56 lg:w-56 lg:ring-[6px]">
-              <GuestBabyIllustration className="h-[85%] w-[85%]" />
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[#fff6f1] shadow-inner ring-4 ring-white sm:h-36 sm:w-36 lg:h-56 lg:w-56 lg:ring-[6px]">
+              <PausingGif src="/girl-gif-5.gif" className="h-full w-full object-cover" />
             </div>
           </div>
 
