@@ -20,14 +20,18 @@ export function PausingGif({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const view = canvas?.getContext("2d");
-    if (!canvas || !view) return;
+    if (!canvas) return;
+    const view = canvas.getContext("2d");
+    const patchCanvas = document.createElement("canvas");
+    const patchView = patchCanvas.getContext("2d");
+    if (!view || !patchView) return;
+
+    const canvasEl: HTMLCanvasElement = canvas;
+    const ctx: CanvasRenderingContext2D = view;
+    const patchCtx: CanvasRenderingContext2D = patchView;
 
     let cancelled = false;
     let timer = 0;
-    const patchCanvas = document.createElement("canvas");
-    const patchView = patchCanvas.getContext("2d");
-    if (!patchView) return;
 
     type HeldFrame = {
       disposal: number;
@@ -37,27 +41,27 @@ export function PausingGif({
 
     function paint(frame: ParsedFrame, held: HeldFrame | null): HeldFrame {
       if (held?.disposal === 2) {
-        view.clearRect(
+        ctx.clearRect(
           held.dims.left,
           held.dims.top,
           held.dims.width,
           held.dims.height,
         );
       } else if (held?.disposal === 3 && held.snapshot) {
-        view.putImageData(held.snapshot, 0, 0);
+        ctx.putImageData(held.snapshot, 0, 0);
       }
 
       const snapshot =
         frame.disposalType === 3
-          ? view.getImageData(0, 0, canvas.width, canvas.height)
+          ? ctx.getImageData(0, 0, canvasEl.width, canvasEl.height)
           : null;
       const { width, height, left, top } = frame.dims;
       patchCanvas.width = width;
       patchCanvas.height = height;
-      const image = patchView.createImageData(width, height);
+      const image = patchCtx.createImageData(width, height);
       image.data.set(frame.patch);
-      patchView.putImageData(image, 0, 0);
-      view.drawImage(patchCanvas, left, top);
+      patchCtx.putImageData(image, 0, 0);
+      ctx.drawImage(patchCanvas, left, top);
 
       return { disposal: frame.disposalType, dims: frame.dims, snapshot };
     }
@@ -72,7 +76,7 @@ export function PausingGif({
         timer = window.setTimeout(() => step(frames, 0, null), HOLD_MS);
         return;
       }
-      if (index === 0) view.clearRect(0, 0, canvas.width, canvas.height);
+      if (index === 0) ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
       const next = paint(frames[index], index === 0 ? null : held);
       timer = window.setTimeout(
         () => step(frames, index + 1, next),
@@ -87,8 +91,8 @@ export function PausingGif({
       if (cancelled) return;
       const frames = decompressFrames(gif, true);
       if (!frames.length) return;
-      canvas.width = gif.lsd.width;
-      canvas.height = gif.lsd.height;
+      canvasEl.width = gif.lsd.width;
+      canvasEl.height = gif.lsd.height;
       step(frames, 0, null);
     })();
 
