@@ -201,7 +201,7 @@ export function PregnancyDashPreview({
       </header>
 
       <div
-        className={`grid grid-cols-[1.2fr_1fr_1fr] grid-rows-[5.75rem_minmax(0,1fr)_minmax(0,1.15fr)] gap-1.5 sm:grid-rows-[6.75rem_minmax(0,1fr)_minmax(0,1.15fr)] sm:gap-2.5 lg:grid-cols-[1.25fr_1fr_1fr] lg:grid-rows-[minmax(7.5rem,1.05fr)_minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-4 xl:gap-5 ${
+        className={`grid grid-cols-[1.2fr_1fr_1fr] grid-rows-3 gap-1.5 sm:gap-2.5 lg:grid-cols-[1.25fr_1fr_1fr] lg:gap-4 xl:gap-5 ${
           fillViewport
             ? "min-h-0 flex-1"
             : "min-h-[28rem] sm:min-h-[32rem] lg:min-h-0 lg:flex-1"
@@ -238,8 +238,11 @@ export function PregnancyDashPreview({
           </div>
 
           <div className="flex shrink-0 items-center justify-center py-0.5">
-            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[#fff6f1] shadow-inner ring-4 ring-white sm:h-36 sm:w-36 lg:h-56 lg:w-56 lg:ring-[6px]">
-              <PausingGif src="/girl-gif-5.gif" className="h-full w-full object-cover" />
+            <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-full bg-[#fff6f1] shadow-inner ring-4 ring-white sm:h-36 sm:w-36 lg:h-56 lg:w-56 lg:ring-[6px]">
+              <PausingGif
+                src="/girl-gif-5.gif"
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
 
