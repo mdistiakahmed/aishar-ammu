@@ -30,7 +30,7 @@ export function HomePageForLoggedInUser({
     <div className="space-y-5">
       <ProfileDetailsCollapsible user={user} weightTodayKg={weightTodayKg} />
       <div id="pregnancy-journey" className="scroll-mt-24">
-        <PregnancyDashPreview />
+        <PregnancyDashPreview pregnancyStartDate={user.pregnancyStartDate} />
       </div>
       <p className="px-1 text-2xl font-semibold text-rose-950 sm:text-3xl">Hello, {greeting}</p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -9,13 +9,13 @@ import {
   PencilIcon,
   StethoscopeIcon,
 } from "@/components/homepage/guest/GuestDashIcons";
-import { GuestProduceIllustration } from "@/components/homepage/guest/GuestIllustrations";
-import { babySizeAge, getBabySizeWeek } from "@/lib/baby-size";
+import babyWeekSize from "@/lib/baby-week-size.json";
+import thirdTrimesterBn from "@/lib/third-trimester-bn.json";
 import { addUtcDays, buildPregnancySnapshot, utcToday } from "@/lib/pregnancy";
 
-/** Sample week shown so the dashboard looks complete before real profile data is wired. */
-const DEMO_WEEK = 7;
-const DEMO_DAY = 3;
+/** Signed-out preview until a saved pregnancy start date is available. */
+const GUEST_WEEK = 29;
+const GUEST_DAY = 2;
 
 const TRIMESTER_LABEL: Record<1 | 2 | 3, string> = {
   1: "প্রথম ত্রৈমাসিক",
@@ -23,60 +23,21 @@ const TRIMESTER_LABEL: Record<1 | 2 | 3, string> = {
   3: "তৃতীয় ত্রৈমাসিক",
 };
 
-const SIZE_HIGHLIGHTS: Record<1 | 2 | 3, [string, string]> = {
-  1: ["ক্ষুদ্র নড়াচড়া শুরু হচ্ছে", "প্রধান অঙ্গগুলো গঠিত হচ্ছে"],
-  2: ["নড়াচড়া আরও বোঝা যেতে পারে", "শিশু সপ্তাহে সপ্তাহে বেড়ে উঠছে"],
-  3: [
-    "শিশু আপনার সাথে দেখা করতে প্রস্তুত হচ্ছে",
-    "পূর্ণকাল পর্যন্ত বৃদ্ধি চলছে",
-  ],
-};
+function guideForWeek(week: number) {
+  const contentWeek = Math.min(40, Math.max(28, week));
+  return (
+    thirdTrimesterBn.data.find((entry) => entry.week === contentWeek) ??
+    thirdTrimesterBn.data[0]
+  );
+}
 
-const TODAY_NOTES: Record<1 | 2 | 3, [string, string, string]> = {
-  1: ["পর্যাপ্ত পানি খান", "একটু হাঁটুন", "সুযোগ পেলে বিশ্রাম নিন"],
-  2: ["পর্যাপ্ত পানি খান", "ধীরে হাঁটুন", "শিশুর নড়াচড়া লক্ষ্য করুন"],
-  3: ["পর্যাপ্ত পানি খান", "পা তুলে বিশ্রাম নিন", "শান্ত সন্ধ্যা কাটান"],
-};
-
-const PRODUCE_BN: Record<string, string> = {
-  "poppy seed": "পপি বীজ",
-  "sesame seed": "তিল",
-  "apple seed": "আপেলের বীজ",
-  lentil: "মসুর ডাল",
-  blueberry: "ব্লুবেরি",
-  raspberry: "রাস্পবেরি",
-  grape: "আঙুর",
-  strawberry: "স্ট্রবেরি",
-  fig: "ডুমুর",
-  lime: "লেবু",
-  "pea pod": "মটরশুঁটি",
-  lemon: "লেবু",
-  apple: "আপেল",
-  avocado: "অ্যাভোকাডো",
-  pear: "নাশপাতি",
-  "bell pepper": "ক্যাপসিকাম",
-  mango: "আম",
-  banana: "কলা",
-  carrot: "গাজর",
-  papaya: "পেঁপে",
-  grapefruit: "বাতাবি লেবু",
-  "ear of corn": "ভুট্টা",
-  cauliflower: "ফুলকপি",
-  "spring onions": "পেঁয়াজকলি",
-  cabbage: "বাঁধাকপি",
-  eggplant: "বেগুন",
-  "butternut squash": "স্কোয়াশ",
-  coconut: "নারকেল",
-  pineapple: "আনারস",
-  squash: "স্কোয়াশ",
-  cantaloupe: "খরমুজ",
-  "honeydew melon": "মধুমেলন",
-  "romaine lettuce": "লেটুস",
-  "Swiss chard": "পালং শাক",
-  leek: "লীক",
-  "mini watermelon": "ছোট তরমুজ",
-  "small pumpkin": "ছোট কুমড়া",
-};
+function sizeForWeek(week: number) {
+  const contentWeek = Math.min(40, Math.max(4, week));
+  return (
+    babyWeekSize.data.find((entry) => entry.week === contentWeek) ??
+    babyWeekSize.data[0]
+  );
+}
 
 const PREVIEW_DUA = {
   text: "হে আমার পালনকর্তা, তোমার কাছ থেকে আমাকে উত্তম সন্তান দান কর। নিশ্চয়ই তুমি প্রার্থনা শ্রবণকারী।",
@@ -90,10 +51,6 @@ function toBnDigits(value: string | number) {
     /\d/g,
     (digit) => BN_DIGITS[Number(digit)] ?? digit,
   );
-}
-
-function produceLabelBn(produceName: string) {
-  return PRODUCE_BN[produceName] ?? produceName;
 }
 
 function formatDisplayDate(date: Date) {
@@ -121,12 +78,12 @@ function trimesterProgress(week: number, day: number, trimester: 1 | 2 | 3) {
   return Math.min(1, Math.max(0, totalDays - 28 * 7) / (12 * 7 + 6));
 }
 
-function formatLengthLabelBn(lengthCm: string) {
-  const match = lengthCm.match(/([\d.]+)\s*cm/i);
-  if (match) return `প্রায় ${toBnDigits(match[1])} সেমি`;
-  if (/too early/i.test(lengthCm)) return "এখনো পরিমাপযোগ্য নয়";
-  if (/under/i.test(lengthCm)) return "০.১ সেমির কম";
-  return "আকার ভিন্ন হতে পারে";
+function formatWeightBn(weightGrams: number) {
+  if (weightGrams < 1000) return `${toBnDigits(weightGrams)} গ্রাম`;
+  const kg = weightGrams / 1000;
+  const hundredths = Math.round(kg * 100);
+  const label = hundredths % 10 === 0 ? kg.toFixed(1) : kg.toFixed(2);
+  return `${toBnDigits(label)} কেজি`;
 }
 
 /** Sample visit a few days ahead so the preview card feels current. */
@@ -143,9 +100,12 @@ function previewVisitLabel(from: Date) {
 
 export function PregnancyDashPreview({
   fillViewport = false,
+  pregnancyStartDate,
 }: {
   /** Guest landing locks to the viewport; logged-in pages size to content. */
   fillViewport?: boolean;
+  /** Saved start date. Omit for the signed-out preview (29 weeks, 2 days). */
+  pregnancyStartDate?: string | null;
 }) {
   const [now, setNow] = useState(() => new Date());
 
@@ -154,20 +114,20 @@ export function PregnancyDashPreview({
   }, []);
 
   const snapshot = useMemo(() => {
-    const start = addUtcDays(utcToday(), -(DEMO_WEEK * 7 + DEMO_DAY));
+    const start =
+      pregnancyStartDate === undefined
+        ? addUtcDays(utcToday(), -(GUEST_WEEK * 7 + GUEST_DAY))
+        : pregnancyStartDate;
     return buildPregnancySnapshot({
       pregnancyStartDate: start,
       dueDate: null,
       nextDoctorVisitDate: null,
     });
-  }, []);
+  }, [pregnancyStartDate]);
 
-  const { week } = babySizeAge(snapshot.week, snapshot.day);
-  const size = getBabySizeWeek(week);
-  const produceLabel = produceLabelBn(size.produceName);
-  const lengthLabel = formatLengthLabelBn(snapshot.milestone.lengthCm);
-  const highlights = SIZE_HIGHLIGHTS[snapshot.trimester];
-  const notes = TODAY_NOTES[snapshot.trimester];
+  const weekGuide = guideForWeek(snapshot.week);
+  const babySize = sizeForWeek(snapshot.week);
+  const weightLabel = formatWeightBn(babySize.weightGrams);
   const progress = trimesterProgress(
     snapshot.week,
     snapshot.day,
@@ -246,10 +206,16 @@ export function PregnancyDashPreview({
             </div>
           </div>
 
-          <p className="shrink-0 px-0.5 text-[0.55rem] leading-snug text-[#5c6554] sm:text-[0.7rem] lg:text-sm lg:leading-6">
-            <span className="font-semibold">বিকাশ:</span> {highlights[0]},{" "}
-            {highlights[1]}।
-          </p>
+          <ul className="min-h-0 w-full flex-1 space-y-0.5 overflow-y-auto px-0.5 text-left text-[0.55rem] leading-snug text-[#5c6554] sm:text-[0.7rem] lg:space-y-1 lg:text-sm lg:leading-6">
+            {weekGuide.yourBaby.map((line, index) => (
+              <li key={`${weekGuide.week}-baby-${index}`} className="flex gap-1.5">
+                <span className="shrink-0" aria-hidden="true">
+                  •
+                </span>
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
         </GuestDashCard>
 
         <GuestDashCard
@@ -258,14 +224,19 @@ export function PregnancyDashPreview({
           className="col-start-2 row-start-1"
           bodyClassName="items-center justify-center gap-1 text-center lg:gap-2"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f0fa] sm:h-11 sm:w-11 lg:h-16 lg:w-16">
-            <GuestProduceIllustration
-              produceName={size.produceName}
-              className="h-7 w-7 sm:h-9 sm:w-9 lg:h-14 lg:w-14"
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f4f0fa] sm:h-14 sm:w-14 lg:h-20 lg:w-20">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/baby-size/${babySize.image}`}
+              alt={babySize.fruit}
+              className="h-full w-full object-contain"
             />
           </div>
           <p className="text-[0.58rem] font-medium leading-snug text-[#5c6554] sm:text-[0.7rem] lg:text-sm">
-            {produceLabel}, {lengthLabel}।
+            বাবুর আকার <span className="font-bold text-[#3f4634]">{babySize.fruit}</span> এর সমান
+          </p>
+          <p className="text-[0.58rem] font-medium leading-snug text-[#5c6554] sm:text-[0.7rem] lg:text-sm">
+            বাবুর ওজন <span className="font-bold text-[#3f4634]">{weightLabel}</span>
           </p>
         </GuestDashCard>
 
@@ -297,9 +268,9 @@ export function PregnancyDashPreview({
           className="col-span-2 col-start-2 row-start-2"
           bodyClassName="justify-center"
         >
-          <ol className="space-y-0.5 text-[0.58rem] leading-snug text-[#5c5346] sm:text-[0.7rem] lg:space-y-1.5 lg:text-sm lg:leading-6">
-            {notes.map((line, index) => (
-              <li key={line} className="flex gap-1.5">
+          <ol className="min-h-0 flex-1 space-y-0.5 overflow-y-auto text-[0.58rem] leading-snug text-[#5c5346] sm:text-[0.7rem] lg:space-y-1.5 lg:text-sm lg:leading-6">
+            {weekGuide.yourBody.map((line, index) => (
+              <li key={`${weekGuide.week}-body-${index}`} className="flex gap-1.5">
                 <span className="font-semibold tabular-nums">
                   {toBnDigits(index + 1)}.
                 </span>
