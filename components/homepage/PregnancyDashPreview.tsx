@@ -318,7 +318,7 @@ export function PregnancyDashPreview({
         <GuestDashCard
           title={
             isCurrentWeek
-              ? "আজকের বাবুর বিকাশ"
+              ? "এই সপ্তাহের বাবুর বিকাশ"
               : `সপ্তাহ ${viewedWeekLabel}-এর বাবুর বিকাশ`
           }
           headerClassName="bg-[#7d9a78]"
@@ -352,7 +352,7 @@ export function PregnancyDashPreview({
         <GuestDashCard
           title={
             isCurrentWeek
-              ? "আজকের বাবুর সাইজ"
+              ? "এই সপ্তাহের বাবুর সাইজ"
               : `সপ্তাহ ${viewedWeekLabel}-এর বাবুর সাইজ`
           }
           headerClassName="bg-[#8c84b0]"
@@ -401,7 +401,7 @@ export function PregnancyDashPreview({
 
         <div className="contents lg:col-span-2 lg:col-start-2 lg:row-start-2 lg:flex lg:flex-col lg:gap-4 lg:self-stretch xl:gap-5">
           <GuestDashCard
-            title="মায়ের বিকাশ"
+            title="মায়ের শারীরিক/ মানসিক পরিবর্তন"
             headerClassName="bg-[#e8dcc8]"
             titleClassName="text-[#5c5346]"
             icon={
