@@ -15,6 +15,8 @@
   --font-sans: var(--font-geist);
   --font-display: var(--font-fraunces);
   --font-bn: var(--font-bengali);
+  --text-md: 1rem;
+  --text-md--line-height: 1.5rem;
 }
 
 html {

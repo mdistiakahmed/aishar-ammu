@@ -11,7 +11,12 @@ import {
 } from "@/components/homepage/guest/GuestDashIcons";
 import babyWeekSize from "@/lib/baby-week-size.json";
 import pregnancyWeekByWeek from "@/lib/pregnancy-week-by-week.json";
-import { addUtcDays, buildPregnancySnapshot, trimester, utcToday } from "@/lib/pregnancy";
+import {
+  addUtcDays,
+  buildPregnancySnapshot,
+  trimester,
+  utcToday,
+} from "@/lib/pregnancy";
 
 /** Signed-out preview until a saved pregnancy start date is available. */
 const GUEST_WEEK = 29;
@@ -37,7 +42,10 @@ const TRIMESTER_LABEL: Record<1 | 2 | 3, string> = {
 };
 
 function guideForWeek(week: number) {
-  const contentWeek = Math.min(CONTENT_MAX_WEEK, Math.max(CONTENT_MIN_WEEK, week));
+  const contentWeek = Math.min(
+    CONTENT_MAX_WEEK,
+    Math.max(CONTENT_MIN_WEEK, week),
+  );
   return (
     pregnancyWeekByWeek.data.find((entry) => entry.week === contentWeek) ??
     pregnancyWeekByWeek.data[0]
@@ -119,9 +127,18 @@ function ChevronIcon({
   className?: string;
 }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
-        d={direction === "left" ? "M14.5 6.5 9 12l5.5 5.5" : "M9.5 6.5 15 12l-5.5 5.5"}
+        d={
+          direction === "left"
+            ? "M14.5 6.5 9 12l5.5 5.5"
+            : "M9.5 6.5 15 12l-5.5 5.5"
+        }
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -133,7 +150,12 @@ function ChevronIcon({
 
 function CurrentWeekIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="7.25" stroke="currentColor" strokeWidth="2" />
       <circle cx="12" cy="12" r="2.25" fill="currentColor" />
     </svg>
@@ -188,11 +210,7 @@ export function PregnancyDashPreview({
   const babySize = sizeForWeek(viewedWeek);
   const viewedWeekLabel = toBnDigits(viewedWeek);
   const weightLabel = formatWeightBn(babySize.weightGrams);
-  const progress = trimesterProgress(
-    viewedWeek,
-    snapshot.day,
-    viewedTrimester,
-  );
+  const progress = trimesterProgress(viewedWeek, snapshot.day, viewedTrimester);
   const ageLabel = `${toBnDigits(viewedWeek)} সপ্তাহ ${toBnDigits(snapshot.day)} দিন`;
   const visitWhen = previewVisitLabel(now);
 
@@ -253,7 +271,10 @@ export function PregnancyDashPreview({
           onClick={() => setViewedWeek((week) => stepContentWeek(week, 1))}
         >
           পরের সপ্তাহ
-          <ChevronIcon direction="right" className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          <ChevronIcon
+            direction="right"
+            className="h-3 w-3 sm:h-3.5 sm:w-3.5"
+          />
         </button>
       </div>
 
@@ -313,7 +334,7 @@ export function PregnancyDashPreview({
             </div>
           </div>
 
-          <ul className="w-full space-y-0.5 px-0.5 text-left text-[0.55rem] leading-snug text-[#5c6554] sm:text-[0.7rem] lg:space-y-1 lg:text-sm lg:leading-6">
+          <ul className="w-full space-y-1 px-0.5 text-left text-md leading-snug text-[#5c6554] lg:leading-6">
             {weekGuide.yourBaby.map((line, index) => (
               <li
                 key={`${weekGuide.week}-baby-${index}`}
@@ -367,12 +388,10 @@ export function PregnancyDashPreview({
           className={`col-start-3 row-start-1 self-start ${todayCardHeight}`}
           bodyClassName="min-h-0 flex-1 justify-center gap-0.5 lg:gap-1"
         >
-          <p className="text-[0.58rem] leading-snug text-[#4a4458] sm:text-[0.7rem] lg:text-sm">
+          <p className="text-md leading-snug text-[#4a4458]">
             <span className="font-semibold">সাক্ষাৎ:</span> {visitWhen}
           </p>
-          <p className="text-[0.58rem] leading-snug text-[#6b6680] sm:text-[0.7rem] lg:text-sm">
-            ডা. আয়শা খান
-          </p>
+          <p className="text-md leading-snug text-[#6b6680]">ডা. আয়শা খান</p>
           {otherWeekNote ? (
             <p className="mt-1 text-[0.55rem] leading-snug text-[#8a4b32] sm:text-[0.65rem] lg:text-xs">
               {otherWeekNote}
@@ -391,7 +410,7 @@ export function PregnancyDashPreview({
             className="row-start-3 min-h-40 max-lg:col-span-3 lg:min-h-44 lg:flex-1"
             bodyClassName="flex-1 justify-center"
           >
-            <ol className="space-y-0.5 text-[0.58rem] leading-snug text-[#5c5346] sm:text-[0.7rem] lg:space-y-1.5 lg:text-sm lg:leading-6">
+            <ol className="space-y-1 text-md leading-snug text-[#5c5346] lg:space-y-1.5 lg:leading-6">
               {weekGuide.yourBody.map((line, index) => (
                 <li
                   key={`${weekGuide.week}-body-${index}`}
@@ -413,7 +432,7 @@ export function PregnancyDashPreview({
             className="row-start-4 min-h-40 max-lg:col-span-3 lg:min-h-44 lg:flex-1"
             bodyClassName="flex-1 justify-center"
           >
-            <ol className="space-y-0.5 text-[0.58rem] leading-snug text-[#3f4634] sm:text-[0.7rem] lg:space-y-1.5 lg:text-sm lg:leading-6">
+            <ol className="space-y-1 text-md leading-snug text-[#3f4634] lg:space-y-1.5 lg:leading-6">
               {weekGuide.suggestionsThisWeek.map((line, index) => (
                 <li
                   key={`${weekGuide.week}-suggestion-${index}`}
@@ -438,15 +457,13 @@ export function PregnancyDashPreview({
             className="row-start-5 min-h-40 max-lg:col-span-3 lg:min-h-44 lg:flex-1"
             bodyClassName="flex-1 justify-center gap-1 lg:gap-2"
           >
-            <p className="text-[0.58rem] leading-snug text-[#4a4458] sm:text-[0.7rem] lg:text-sm lg:leading-6">
+            <p className="text-md leading-snug text-[#4a4458] lg:leading-6">
               {PREVIEW_DUA.text}
             </p>
-            <p className="text-[0.5rem] text-[#8a8498] sm:text-[0.6rem] lg:text-xs">
-              — {PREVIEW_DUA.source}
-            </p>
+            <p className="text-xs text-[#8a8498]">— {PREVIEW_DUA.source}</p>
             <Link
               href="/duas"
-              className="mt-auto text-[0.55rem] font-semibold text-sage underline-offset-2 hover:underline lg:text-xs"
+              className="mt-auto text-xs font-semibold text-sage underline-offset-2 hover:underline"
             >
               আরও দোয়া
             </Link>
