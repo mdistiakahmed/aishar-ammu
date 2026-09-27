@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { BookIcon, CloseIcon, HomeIcon, SparkleIcon } from "@/components/icons";
+import type { IconType } from "react-icons";
+import { LuBaby, LuBookOpen, LuHouse, LuSparkles, LuX } from "react-icons/lu";
 import type { SessionUser } from "@/lib/user";
 import { brand, brandBn } from "@/lib/constants";
 
-const navItems = [
-  { href: "/", label: "Home", icon: HomeIcon },
-  { href: "/baby-names", label: "Baby names", icon: SparkleIcon },
-  { href: "/duas", label: "Islamic duas", icon: BookIcon },
+const navItems: { href: string; label: string; icon: IconType }[] = [
+  { href: "/", label: "Home", icon: LuHouse },
+  { href: "/baby-names", label: "Baby names", icon: LuSparkles },
+  { href: "/baby-movement", label: "Baby Movement Tracker", icon: LuBaby },
+  { href: "/duas", label: "Islamic duas", icon: LuBookOpen },
 ];
 
 export function Sidebar({
@@ -54,7 +56,7 @@ export function Sidebar({
             onClick={onClose}
             aria-label="Close menu"
           >
-            <CloseIcon className="h-5 w-5" />
+            <LuX className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 

@@ -6,7 +6,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
 };
 
-export type ApiError = "unauthorized" | "name" | "dates" | "weight" | "db" | "oauth";
+export type ApiError = "unauthorized" | "name" | "dates" | "weight" | "counts" | "db" | "oauth";
 
 export function corsOptions() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });

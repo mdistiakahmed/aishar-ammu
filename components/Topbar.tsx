@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { LogoMark, MenuIcon } from "@/components/icons";
+import { LuMenu } from "react-icons/lu";
+import { LogoMark } from "@/components/icons";
 import type { SessionUser } from "@/lib/user";
 import { brand, brandBn, taglineBn } from "@/lib/constants";
 
@@ -23,7 +24,7 @@ export function Topbar({
           onClick={onOpenMenu}
           aria-label="Open menu"
         >
-          <MenuIcon className="h-5 w-5" />
+          <LuMenu className="h-5 w-5" aria-hidden="true" />
         </button>
 
         <Link href="/" className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">

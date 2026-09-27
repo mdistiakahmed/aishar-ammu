@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import type { BabyGender, UserRecord } from "@/lib/user";
+import { parseMovementLogPayload, type MovementLog } from "@/lib/baby-movements";
 import type { WeightLog } from "@/lib/weights";
 
 export type { UserRecord };
@@ -125,6 +126,36 @@ export async function upsertMotherWeightLog(userId: string, loggedOn: string, we
        ON CONFLICT(user_id, logged_on) DO UPDATE SET weight_kg = excluded.weight_kg`,
     )
     .bind(userId, loggedOn, weightKg)
+    .run();
+}
+
+export async function findBabyMovementCounts(userId: string): Promise<MovementLog | null> {
+  const row = await getDb()
+    .prepare(`SELECT counts_json FROM baby_movement_logs WHERE user_id = ?`)
+    .bind(userId)
+    .first<{ counts_json: string }>();
+  if (!row) return null;
+  try {
+    return parseMovementLogPayload(JSON.parse(row.counts_json)) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+export async function saveBabyMovementCounts(userId: string, log: MovementLog) {
+  const sorted: MovementLog = {};
+  for (const date of Object.keys(log).sort((a, b) => b.localeCompare(a))) {
+    sorted[date] = log[date];
+  }
+  await getDb()
+    .prepare(
+      `INSERT INTO baby_movement_logs (user_id, counts_json, saved_at)
+       VALUES (?, ?, datetime('now'))
+       ON CONFLICT(user_id) DO UPDATE SET
+         counts_json = excluded.counts_json,
+         saved_at = datetime('now')`,
+    )
+    .bind(userId, JSON.stringify(sorted))
     .run();
 }
 
