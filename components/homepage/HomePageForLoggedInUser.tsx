@@ -12,8 +12,8 @@ import { NextVisitPanel } from "@/components/homepage/dashboard/NextVisitPanel";
 import { ProgressPanel } from "@/components/homepage/dashboard/ProgressPanel";
 import { ThisWeekPanel } from "@/components/homepage/dashboard/ThisWeekPanel";
 import type { SessionUser } from "@/lib/user";
-import { buildPregnancySnapshot, utcToday } from "@/lib/pregnancy";
-import { weightOnDate, type WeightLog } from "@/lib/weights";
+import { buildPregnancySnapshot } from "@/lib/pregnancy";
+import type { WeightLog } from "@/lib/weights";
 
 export function HomePageForLoggedInUser({
   user,
@@ -24,11 +24,10 @@ export function HomePageForLoggedInUser({
 }) {
   const snapshot = buildPregnancySnapshot(user);
   const greeting = user.preferredName || user.name.split(" ")[0] || "there";
-  const weightTodayKg = weightOnDate(logs, utcToday());
 
   return (
     <div className="space-y-5">
-      <ProfileDetailsCollapsible user={user} weightTodayKg={weightTodayKg} />
+      <ProfileDetailsCollapsible user={user} />
       <div id="pregnancy-journey" className="scroll-mt-24">
         <PregnancyDashPreview pregnancyStartDate={user.pregnancyStartDate} />
       </div>

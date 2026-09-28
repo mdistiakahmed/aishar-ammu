@@ -5,6 +5,7 @@ type GuestDashCardProps = {
   headerClassName: string;
   titleClassName?: string;
   icon?: ReactNode;
+  headerAction?: ReactNode;
   className?: string;
   bodyClassName?: string;
   children: ReactNode;
@@ -15,6 +16,7 @@ export function GuestDashCard({
   headerClassName,
   titleClassName = "text-white",
   icon,
+  headerAction,
   className = "",
   bodyClassName = "",
   children,
@@ -34,6 +36,7 @@ export function GuestDashCard({
         >
           {title}
         </h2>
+        {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
       </div>
       <div className={`flex flex-col px-2.5 py-2 lg:px-4 lg:py-3 ${bodyClassName}`}>
         {children}

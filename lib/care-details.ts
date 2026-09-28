@@ -90,6 +90,13 @@ export function removeLocalWeightLog(user: SessionUser, logs: WeightLog[], logge
   return { user: nextUser, logs: nextLogs };
 }
 
+export function saveNextDoctorVisitDate(user: SessionUser, logs: WeightLog[], date: string) {
+  const stored = readCareDetails(user.id) ?? toStored(user, logs);
+  const next = { ...stored, nextDoctorVisitDate: date };
+  writeCareDetails(user.id, next);
+  return applyStored(user, next);
+}
+
 function applyStored(user: SessionUser, stored: StoredCareDetails) {
   return {
     user: {

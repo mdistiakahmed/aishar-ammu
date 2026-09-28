@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { NextDoctorVisitCard } from "@/components/homepage/NextDoctorVisitCard";
 import { PausingGif } from "@/components/homepage/PausingGif";
 import { GuestDashCard } from "@/components/homepage/guest/GuestDashCard";
 import {
   CrescentIcon,
   PencilIcon,
-  StethoscopeIcon,
 } from "@/components/homepage/guest/GuestDashIcons";
 import babyWeekSize from "@/lib/baby-week-size.json";
 import pregnancyWeekByWeek from "@/lib/pregnancy-week-by-week.json";
@@ -378,26 +378,11 @@ export function PregnancyDashPreview({
           </p>
         </GuestDashCard>
 
-        <GuestDashCard
-          title="পরবর্তী ডাক্তার দেখা"
-          headerClassName="bg-[#d5d0de]"
-          titleClassName="text-[#4a4458]"
-          icon={
-            <StethoscopeIcon className="h-3.5 w-3.5 text-[#4a4458] lg:h-4 lg:w-4" />
-          }
-          className={`col-start-3 row-start-1 self-start ${todayCardHeight}`}
-          bodyClassName="min-h-0 flex-1 justify-center gap-0.5 lg:gap-1"
-        >
-          <p className="text-md leading-snug text-[#4a4458]">
-            <span className="font-semibold">সাক্ষাৎ:</span> {visitWhen}
-          </p>
-          <p className="text-md leading-snug text-[#6b6680]">ডা. আয়শা খান</p>
-          {otherWeekNote ? (
-            <p className="mt-1 text-[0.55rem] leading-snug text-[#8a4b32] sm:text-[0.65rem] lg:text-xs">
-              {otherWeekNote}
-            </p>
-          ) : null}
-        </GuestDashCard>
+        <NextDoctorVisitCard
+          previewWhen={visitWhen}
+          note={otherWeekNote}
+          className="col-start-3 row-start-1 self-start min-h-52 lg:min-h-64"
+        />
 
         <div className="contents lg:col-span-2 lg:col-start-2 lg:row-start-2 lg:flex lg:flex-col lg:gap-4 lg:self-stretch xl:gap-5">
           <GuestDashCard

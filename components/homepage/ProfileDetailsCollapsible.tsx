@@ -5,29 +5,17 @@ import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ProfileStatus } from "@/components/profile/ProfileStatus";
 import { saveLocalProfile } from "@/lib/care-details";
-import { gestationalAge, parseIsoDate } from "@/lib/pregnancy";
 import type { BabyGender, SessionUser } from "@/lib/user";
-import { formatWeightInput } from "@/lib/weights";
 
-const DETAIL_TOTAL = 6;
+const DETAIL_TOTAL = 3;
 
 const fieldId = {
   name: "home-details-preferred-name",
   start: "home-details-pregnancy-start",
-  due: "home-details-due-date",
-  visit: "home-details-next-visit",
   gender: "home-details-baby-gender",
-  startWeight: "home-details-weight-start",
-  todayWeight: "home-details-weight-today",
 } as const;
 
-export function ProfileDetailsCollapsible({
-  user,
-  weightTodayKg = null,
-}: {
-  user: SessionUser;
-  weightTodayKg?: number | null;
-}) {
+export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
   const { logs, setMe } = useAuth();
   const titleId = useId();
   const panelId = useId();
@@ -43,7 +31,6 @@ export function ProfileDetailsCollapsible({
   const [error, setError] = useState<string>();
 
   const added = addedCount(user);
-  const week = weekText(user.pregnancyStartDate);
   const name = user.preferredName || user.name;
 
   useEffect(() => {
@@ -125,10 +112,9 @@ export function ProfileDetailsCollapsible({
       const result = saveLocalProfile(user, logs, {
         preferredName: formData.get("preferredName"),
         pregnancyStartDate: formData.get("pregnancyStartDate"),
-        dueDate: formData.get("dueDate"),
-        nextDoctorVisitDate: formData.get("nextDoctorVisitDate"),
-        weightAtStartKg: formData.get("weightAtStartKg"),
-        weightTodayKg: formData.get("weightTodayKg"),
+        dueDate: user.dueDate ?? "",
+        nextDoctorVisitDate: user.nextDoctorVisitDate ?? "",
+        weightAtStartKg: user.weightAtStartKg ?? "",
         babyGender: formData.get("babyGender"),
       });
       if (!result.ok) {
@@ -225,52 +211,8 @@ export function ProfileDetailsCollapsible({
         </div>
       ) : null}
 
-      <div className="mt-4 grid grid-cols-1 gap-2.5 lg:hidden">
-        <DetailTile
-          label="Pregnancy start"
-          value={user.pregnancyStartDate ? shortDate(user.pregnancyStartDate) : "Not started"}
-          empty={!user.pregnancyStartDate}
-          icon={<CalendarIcon className="h-5 w-5" />}
-          onEdit={() => openEditor(fieldId.start)}
-        />
-        <DetailTile
-          label="Due date"
-          value={user.dueDate ? shortDate(user.dueDate) : "Not set"}
-          empty={!user.dueDate}
-          badge={user.dueDate ? week : null}
-          icon={<CalendarIcon className="h-5 w-5" />}
-          onEdit={() => openEditor(fieldId.due)}
-          className={user.dueDate ? "bg-rose-50" : ""}
-          bubbleClassName={user.dueDate ? "bg-white" : "bg-rose-50"}
-        />
-        <DetailTile
-          label="Next visit"
-          value={user.nextDoctorVisitDate ? shortDate(user.nextDoctorVisitDate) : "Not set"}
-          empty={!user.nextDoctorVisitDate}
-          icon={<StethoscopeIcon className="h-5 w-5" />}
-          affordance="chevron"
-          onEdit={() => openEditor(fieldId.visit)}
-        />
-        <DetailTile
-          label="Baby gender"
-          value={genderText(user.babyGender)}
-          empty={!user.babyGender}
-          icon={<BabyIcon className="h-5 w-5" />}
-          affordance="chevron"
-          onEdit={() => openEditor(fieldId.gender)}
-        />
-        <DetailTile
-          label="Weight at start"
-          value={weightText(user.weightAtStartKg)}
-          empty={user.weightAtStartKg === null}
-          icon={<ScaleIcon className="h-5 w-5" />}
-          affordance="chevron"
-          onEdit={() => openEditor(fieldId.startWeight)}
-        />
-      </div>
-
       {!editing ? (
-        <div className="mt-4 hidden grid-cols-2 gap-3 lg:grid">
+        <div className="mt-4 flex flex-col gap-2.5">
           <DetailTile
             label="Preferred name"
             value={name.trim() ? name : "Not set"}
@@ -281,27 +223,10 @@ export function ProfileDetailsCollapsible({
           />
           <DetailTile
             label="Pregnancy start"
-            value={user.pregnancyStartDate ? slashDate(user.pregnancyStartDate) : "mm/dd/yyyy"}
+            value={user.pregnancyStartDate ? shortDate(user.pregnancyStartDate) : "Not started"}
             empty={!user.pregnancyStartDate}
             icon={<CalendarIcon className="h-5 w-5" />}
-            affordance="pencil"
             onEdit={() => openEditor(fieldId.start)}
-          />
-          <DetailTile
-            label="Due date"
-            value={user.dueDate ? slashDate(user.dueDate) : "mm/dd/yyyy"}
-            empty={!user.dueDate}
-            icon={<CalendarIcon className="h-5 w-5" />}
-            affordance="pencil"
-            onEdit={() => openEditor(fieldId.due)}
-          />
-          <DetailTile
-            label="Next doctor visit"
-            value={user.nextDoctorVisitDate ? slashDate(user.nextDoctorVisitDate) : "mm/dd/yyyy"}
-            empty={!user.nextDoctorVisitDate}
-            icon={<CalendarIcon className="h-5 w-5" />}
-            affordance="pencil"
-            onEdit={() => openEditor(fieldId.visit)}
           />
           <DetailTile
             label="Baby gender"
@@ -310,14 +235,6 @@ export function ProfileDetailsCollapsible({
             icon={<BabyIcon className="h-5 w-5" />}
             affordance="chevron"
             onEdit={() => openEditor(fieldId.gender)}
-          />
-          <DetailTile
-            label="Weight at start (kg)"
-            value={weightText(user.weightAtStartKg)}
-            empty={user.weightAtStartKg === null}
-            icon={<ScaleIcon className="h-5 w-5" />}
-            affordance="chevron"
-            onEdit={() => openEditor(fieldId.startWeight)}
           />
         </div>
       ) : null}
@@ -358,30 +275,24 @@ export function ProfileDetailsCollapsible({
             </button>
           </div>
 
-          <div className="grid gap-2.5 lg:grid-cols-2 lg:gap-3">
-            {error ? (
-              <div className="lg:col-span-2">
-                <ProfileStatus error={error} />
-              </div>
-            ) : null}
-            <div className="hidden lg:contents">
-              <EditorField
+          <div className="flex flex-col gap-2.5">
+            {error ? <ProfileStatus error={error} /> : null}
+            <EditorField
+              id={fieldId.name}
+              label="Preferred name"
+              icon={<PersonIcon className="h-5 w-5" />}
+              affordance="pencil"
+            >
+              <input
                 id={fieldId.name}
-                label="Preferred name"
-                icon={<PersonIcon className="h-5 w-5" />}
-                affordance="pencil"
-              >
-                <input
-                  id={fieldId.name}
-                  name="preferredName"
-                  type="text"
-                  maxLength={40}
-                  defaultValue={name}
-                  autoComplete="name"
-                  className={controlClass}
-                />
-              </EditorField>
-            </div>
+                name="preferredName"
+                type="text"
+                maxLength={40}
+                defaultValue={name}
+                autoComplete="name"
+                className={controlClass}
+              />
+            </EditorField>
             <EditorField
               id={fieldId.start}
               label="Pregnancy start"
@@ -393,44 +304,6 @@ export function ProfileDetailsCollapsible({
                 name="pregnancyStartDate"
                 type="date"
                 defaultValue={user.pregnancyStartDate ?? ""}
-                className={controlClass}
-              />
-            </EditorField>
-            <EditorField
-              id={fieldId.due}
-              label="Due date"
-              badge={week}
-              icon={<CalendarIcon className="h-5 w-5" />}
-              affordance="pencil"
-            >
-              <input
-                id={fieldId.due}
-                name="dueDate"
-                type="date"
-                defaultValue={user.dueDate ?? ""}
-                className={controlClass}
-              />
-            </EditorField>
-            <EditorField
-              id={fieldId.visit}
-              label="Next doctor visit"
-              icon={
-                <>
-                  <span className="lg:hidden">
-                    <StethoscopeIcon className="h-5 w-5" />
-                  </span>
-                  <span className="hidden lg:block">
-                    <CalendarIcon className="h-5 w-5" />
-                  </span>
-                </>
-              }
-              affordance="pencil"
-            >
-              <input
-                id={fieldId.visit}
-                name="nextDoctorVisitDate"
-                type="date"
-                defaultValue={user.nextDoctorVisitDate ?? ""}
                 className={controlClass}
               />
             </EditorField>
@@ -452,49 +325,7 @@ export function ProfileDetailsCollapsible({
                 <option value="unknown">Not known yet</option>
               </select>
             </EditorField>
-            <EditorField
-              id={fieldId.startWeight}
-              label="Weight at start (kg)"
-              icon={<ScaleIcon className="h-5 w-5" />}
-              affordance="chevron"
-            >
-              <input
-                id={fieldId.startWeight}
-                name="weightAtStartKg"
-                type="number"
-                inputMode="decimal"
-                min={30}
-                max={180}
-                step={0.1}
-                defaultValue={formatWeightInput(user.weightAtStartKg)}
-                className={numberClass}
-              />
-            </EditorField>
-            <EditorField
-              id={fieldId.todayWeight}
-              label="Weight as of today (kg)"
-              icon={<ScaleIcon className="h-5 w-5" />}
-              affordance="chevron"
-            >
-              <input
-                id={fieldId.todayWeight}
-                name="weightTodayKg"
-                type="number"
-                inputMode="decimal"
-                min={30}
-                max={180}
-                step={0.1}
-                defaultValue={formatWeightInput(weightTodayKg)}
-                className={numberClass}
-              />
-            </EditorField>
-            <Link
-              href="/account"
-              className="block py-1 text-center text-sm font-semibold text-rose-600 underline-offset-2 hover:underline lg:col-span-2 lg:text-left"
-            >
-              Edit weight history
-            </Link>
-            <div className="mt-1 flex flex-col gap-1 lg:col-span-2 lg:flex-row-reverse lg:items-center lg:justify-end lg:gap-3">
+            <div className="mt-1 flex flex-col gap-1 lg:flex-row-reverse lg:items-center lg:justify-end lg:gap-3">
               <button
                 type="submit"
                 disabled={pending}
@@ -539,8 +370,6 @@ export function ProfileDetailsCollapsible({
 
 const controlClass =
   "mt-1 block h-9 w-full min-w-0 bg-transparent text-base font-semibold text-rose-800 outline-none lg:text-sm";
-
-const numberClass = `${controlClass} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`;
 
 function DetailTile({
   label,
@@ -664,22 +493,8 @@ function addedCount(user: SessionUser) {
   return [
     Boolean((user.preferredName || user.name).trim()),
     Boolean(user.pregnancyStartDate),
-    Boolean(user.dueDate),
-    Boolean(user.nextDoctorVisitDate),
     Boolean(user.babyGender),
-    user.weightAtStartKg !== null,
   ].filter(Boolean).length;
-}
-
-function weekText(start: string | null) {
-  if (!start || !parseIsoDate(start)) return null;
-  return `Week ${gestationalAge(start).week}`;
-}
-
-function slashDate(iso: string) {
-  const [year, month, day] = iso.split("-");
-  if (!year || !month || !day) return iso;
-  return `${month}/${day}/${year}`;
 }
 
 function shortDate(iso: string) {
@@ -698,10 +513,6 @@ function genderText(value: BabyGender | null) {
   if (value === "boy") return "Boy";
   if (value === "unknown") return "Not known yet";
   return "Not set";
-}
-
-function weightText(value: number | null) {
-  return value === null ? "Not set" : String(value);
 }
 
 function PersonIcon({ className }: { className?: string }) {
@@ -732,27 +543,6 @@ function CalendarIcon({ className }: { className?: string }) {
   );
 }
 
-function StethoscopeIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M7 4.5v6a3.5 3.5 0 0 0 7 0v-6"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <path d="M5.5 4.5h2.2M12.3 4.5H14.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path
-        d="M14 10.2a4.2 4.2 0 0 0 8.2.2V8.5"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <circle cx="19.4" cy="7.2" r="1.5" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  );
-}
-
 function BabyIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -769,16 +559,6 @@ function BabyIcon({ className }: { className?: string }) {
         strokeWidth="1.7"
         strokeLinecap="round"
       />
-    </svg>
-  );
-}
-
-function ScaleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="5" y="7.5" width="14" height="11" rx="2.4" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="12" cy="13" r="2.1" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M9.2 7.5V6.6A2.8 2.8 0 0 1 12 3.8a2.8 2.8 0 0 1 2.8 2.8v.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
