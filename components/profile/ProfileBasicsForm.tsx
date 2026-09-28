@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ProfileStatus } from "@/components/profile/ProfileStatus";
-import { api, type MeResponse } from "@/lib/api-client";
+import { saveLocalProfile } from "@/lib/care-details";
 import type { BabyGender, SessionUser } from "@/lib/user";
 import { formatWeightInput } from "@/lib/weights";
 
@@ -18,18 +18,17 @@ export function ProfileBasicsForm({
   compact?: boolean;
   weightTodayKg?: number | null;
 }) {
-  const { setMe, logout } = useAuth();
+  const { logs, setMe } = useAuth();
   const [saved, setSaved] = useState<string>();
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
 
-  async function onSubmit(formData: FormData) {
+  function onSubmit(formData: FormData) {
     setPending(true);
     setSaved(undefined);
     setError(undefined);
-    const result = await api<MeResponse>("/api/me", {
-      method: "PATCH",
-      body: JSON.stringify({
+    try {
+      const result = saveLocalProfile(user, logs, {
         preferredName: formData.get("preferredName"),
         pregnancyStartDate: formData.get("pregnancyStartDate"),
         dueDate: formData.get("dueDate"),
@@ -37,19 +36,18 @@ export function ProfileBasicsForm({
         weightAtStartKg: formData.get("weightAtStartKg"),
         weightTodayKg: formData.get("weightTodayKg"),
         babyGender: formData.get("babyGender"),
-      }),
-    });
-    setPending(false);
-    if (!result.ok) {
-      if (result.status === 401) {
-        await logout();
+      });
+      if (!result.ok) {
+        setError(result.error);
         return;
       }
-      setError(result.error);
-      return;
+      setMe(result);
+      setSaved("1");
+    } catch {
+      setError("db");
+    } finally {
+      setPending(false);
     }
-    setMe(result.data);
-    setSaved("1");
   }
 
   return (

@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ProfileStatus } from "@/components/profile/ProfileStatus";
-import { api, type MeResponse } from "@/lib/api-client";
+import { saveLocalProfile } from "@/lib/care-details";
 import { gestationalAge, parseIsoDate } from "@/lib/pregnancy";
 import type { BabyGender, SessionUser } from "@/lib/user";
 import { formatWeightInput } from "@/lib/weights";
@@ -28,7 +28,7 @@ export function ProfileDetailsCollapsible({
   user: SessionUser;
   weightTodayKg?: number | null;
 }) {
-  const { setMe, logout } = useAuth();
+  const { logs, setMe } = useAuth();
   const titleId = useId();
   const panelId = useId();
   const editButtonRef = useRef<HTMLButtonElement>(null);
@@ -117,13 +117,12 @@ export function ProfileDetailsCollapsible({
     setOpen((value) => !value);
   }
 
-  async function onSubmit(formData: FormData) {
+  function onSubmit(formData: FormData) {
     setPending(true);
     setSaved(undefined);
     setError(undefined);
-    const result = await api<MeResponse>("/api/me", {
-      method: "PATCH",
-      body: JSON.stringify({
+    try {
+      const result = saveLocalProfile(user, logs, {
         preferredName: formData.get("preferredName"),
         pregnancyStartDate: formData.get("pregnancyStartDate"),
         dueDate: formData.get("dueDate"),
@@ -131,21 +130,20 @@ export function ProfileDetailsCollapsible({
         weightAtStartKg: formData.get("weightAtStartKg"),
         weightTodayKg: formData.get("weightTodayKg"),
         babyGender: formData.get("babyGender"),
-      }),
-    });
-    setPending(false);
-    if (!result.ok) {
-      if (result.status === 401) {
-        await logout();
+      });
+      if (!result.ok) {
+        setError(result.error);
         return;
       }
-      setError(result.error);
-      return;
+      setMe(result);
+      setSaved("1");
+      setEditing(false);
+      editButtonRef.current?.focus();
+    } catch {
+      setError("db");
+    } finally {
+      setPending(false);
     }
-    setMe(result.data);
-    setSaved("1");
-    setEditing(false);
-    editButtonRef.current?.focus();
   }
 
   const backgroundHidden = editing && sheet;

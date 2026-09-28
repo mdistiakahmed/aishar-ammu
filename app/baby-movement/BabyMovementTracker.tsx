@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { LuMinus, LuPlus } from "react-icons/lu";
 import {
   Bar,
@@ -13,8 +12,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { api } from "@/lib/api-client";
 import {
   chartColors,
   tooltipStyle,
@@ -40,7 +37,6 @@ import {
 } from "@/lib/baby-movements";
 
 export function BabyMovementTracker() {
-  const { user, ready: authReady } = useAuth();
   const [log, setLog] = useState<MovementLog>({});
   const [today, setToday] = useState("");
   const [ready, setReady] = useState(false);
@@ -49,11 +45,7 @@ export function BabyMovementTracker() {
   const [formError, setFormError] = useState<string>();
   const [savedMessage, setSavedMessage] = useState<string>();
   const [storageError, setStorageError] = useState<string>();
-  const [rememberMessage, setRememberMessage] = useState<string>();
-  const [rememberError, setRememberError] = useState<string>();
-  const [reloadMessage, setReloadMessage] = useState<string>();
-  const [reloadError, setReloadError] = useState<string>();
-  const [syncing, setSyncing] = useState<"remember" | "reload" | null>(null);
+  const rowDrafts = useRef<Record<string, string>>({});
 
   useEffect(() => {
     setToday(localDateKey());
@@ -85,10 +77,12 @@ export function BabyMovementTracker() {
     try {
       writeMovementLog(next);
       setStorageError(undefined);
+      return true;
     } catch {
       setStorageError(
         "This browser could not save the log. The count on screen may be lost if you leave.",
       );
+      return false;
     }
   }
 
@@ -99,35 +93,52 @@ export function BabyMovementTracker() {
     commit(stepMovementCount(log, currentToday, delta));
   }
 
-  function onAddPastDay() {
+  function remember() {
     const currentToday = localDateKey();
     setToday(currentToday);
-    const date = parsePastMovementDate(pastDate, currentToday);
-    if (!date) {
-      setSavedMessage(undefined);
-      setFormError("Choose a day before today.");
-      return;
-    }
-    const count = parseMovementCount(pastCount);
-    if (count === null) {
-      setSavedMessage(undefined);
-      setFormError(`Enter a whole number from 0 to ${MAX_MOVEMENT_SETS}.`);
-      return;
+    let next: MovementLog = { ...log };
+
+    for (const day of earlierMovementDays(log, currentToday)) {
+      const count = parseMovementCount(
+        rowDrafts.current[day.date] ?? String(day.count),
+      );
+      if (count === null) {
+        setSavedMessage(undefined);
+        setFormError(`Enter a whole number from 0 to ${MAX_MOVEMENT_SETS}.`);
+        return;
+      }
+      next = withMovementCount(next, day.date, count);
     }
 
-    if (Object.prototype.hasOwnProperty.call(log, date)) {
-      setSavedMessage(undefined);
-      setFormError("This date is already saved. Update it in the table.");
-      return;
+    const adding = pastDate.trim() !== "" || pastCount.trim() !== "";
+    if (adding) {
+      const date = parsePastMovementDate(pastDate, currentToday);
+      if (!date) {
+        setSavedMessage(undefined);
+        setFormError("Choose a day before today.");
+        return;
+      }
+      const count = parseMovementCount(pastCount);
+      if (count === null) {
+        setSavedMessage(undefined);
+        setFormError(`Enter a whole number from 0 to ${MAX_MOVEMENT_SETS}.`);
+        return;
+      }
+      if (Object.prototype.hasOwnProperty.call(log, date)) {
+        setSavedMessage(undefined);
+        setFormError("This date is already saved. Update it in the list.");
+        return;
+      }
+      next = withMovementCount(next, date, count);
     }
 
-    commit(withMovementCount(log, date, count));
+    if (!commit(next)) return;
     setFormError(undefined);
-    setSavedMessage(
-      `Saved ${count} ${count === 1 ? "set" : "sets"} for ${formatCareDate(date)}.`,
-    );
-    setPastDate("");
-    setPastCount("");
+    if (adding) {
+      setPastDate("");
+      setPastCount("");
+    }
+    setSavedMessage("Saved successfully.");
   }
 
   function updatePastDay(date: string, count: number) {
@@ -137,42 +148,6 @@ export function BabyMovementTracker() {
   function deletePastDay(date: string) {
     commit(withoutMovementDate(log, date));
     setSavedMessage(undefined);
-  }
-
-  async function remember() {
-    setSyncing("remember");
-    setRememberMessage(undefined);
-    setRememberError(undefined);
-    const result = await api<{ counts: MovementLog }>("/api/baby-movements", {
-      method: "PUT",
-      body: JSON.stringify({ counts: log }),
-    });
-    setSyncing(null);
-    if (!result.ok) {
-      setRememberError(syncErrorMessage(result.error));
-      return;
-    }
-    setRememberMessage("Saved on your account.");
-  }
-
-  async function reloadFromAccount() {
-    setSyncing("reload");
-    setReloadMessage(undefined);
-    setReloadError(undefined);
-    const result = await api<{ counts: MovementLog | null }>(
-      "/api/baby-movements",
-    );
-    setSyncing(null);
-    if (!result.ok) {
-      setReloadError(syncErrorMessage(result.error));
-      return;
-    }
-    if (!result.data.counts) {
-      setReloadMessage("Nothing saved on your account yet.");
-      return;
-    }
-    commit(result.data.counts);
-    setReloadMessage("Loaded the saved log into this browser.");
   }
 
   const todayCount = today ? movementCount(log, today) : 0;
@@ -191,9 +166,6 @@ export function BabyMovementTracker() {
   const newDate = today ? parsePastMovementDate(pastDate, today) : null;
   const dateTaken = Boolean(
     newDate && Object.prototype.hasOwnProperty.call(log, newDate),
-  );
-  const canAddDay = Boolean(
-    newDate && parseMovementCount(pastCount) !== null && !dateTaken,
   );
 
   return (
@@ -305,98 +277,57 @@ export function BabyMovementTracker() {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        {authReady && user ? (
-          <div className="mt-6">
-            <p className="text-sm leading-6 text-rose-800">
-              আজকের তথ্য এখনও সংরক্ষণ না করে থাকলে, আগে সেটি সংরক্ষণ করুন।
-            </p>
-            <button
-              type="button"
-              className="mt-3 inline-flex h-12 cursor-pointer items-center justify-center rounded-full border border-rose-200 px-5 text-sm font-semibold text-rose-900 disabled:cursor-default disabled:opacity-40"
-              onClick={() => void reloadFromAccount()}
-              disabled={!ready || syncing !== null}
-            >
-              {syncing === "reload" ? "Loading…" : "Reload data"}
-            </button>
-            {reloadError ? (
-              <p className="mt-3 text-sm text-rose-800">{reloadError}</p>
-            ) : null}
-            {reloadMessage ? (
-              <p className="mt-3 text-sm text-sage-dark">{reloadMessage}</p>
-            ) : null}
-          </div>
-        ) : null}
       </section>
 
       <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-xl font-semibold text-rose-950">Saved days</h2>
         <p className="mt-2 text-sm leading-6 text-rose-900/75">
-          The newest date is at the top. Use the empty row to add a day.
+          The newest date is at the top. Use the empty fields to add a day.
         </p>
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-rose-100 text-rose-800">
-                <th className="py-3 pr-3 font-semibold">Date</th>
-                <th className="py-3 pr-3 font-semibold">Sets</th>
-                <th className="py-3 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {earlierDays.map((day) => (
-                <MovementDayRow
-                  key={day.date}
-                  day={day}
-                  onUpdate={updatePastDay}
-                  onDelete={deletePastDay}
-                />
-              ))}
-              <tr className="border-b border-rose-50">
-                <td className="py-3 pr-3">
-                  <input
-                    id="past-movement-date"
-                    type="date"
-                    aria-label="New date"
-                    value={pastDate}
-                    max={yesterday}
-                    onChange={(event) => {
-                      setPastDate(event.target.value);
-                      setFormError(undefined);
-                    }}
-                    className="box-border h-11 w-full min-w-0 rounded-2xl border border-rose-200 bg-petal px-3 text-sm text-rose-950 outline-none focus:border-rose-400"
-                  />
-                </td>
-                <td className="py-3 pr-3">
-                  <input
-                    id="past-movement-count"
-                    type="number"
-                    aria-label="Sets for the new date"
-                    inputMode="numeric"
-                    min={0}
-                    max={MAX_MOVEMENT_SETS}
-                    step={1}
-                    value={pastCount}
-                    onChange={(event) => setPastCount(event.target.value)}
-                    className="box-border h-11 w-24 rounded-2xl border border-rose-200 bg-petal px-3 text-sm text-rose-950 outline-none focus:border-rose-400"
-                  />
-                </td>
-                <td className="py-3">
-                  <button
-                    type="button"
-                    className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-rose-800 px-4 text-sm font-semibold text-white disabled:cursor-default disabled:opacity-40"
-                    disabled={!canAddDay}
-                    onClick={onAddPastDay}
-                  >
-                    Save
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <ul className="mt-6 space-y-4">
+          {earlierDays.map((day) => (
+            <MovementDayRow
+              key={day.date}
+              day={day}
+              drafts={rowDrafts}
+              onUpdate={updatePastDay}
+              onDelete={deletePastDay}
+            />
+          ))}
+          <li className="space-y-3 rounded-3xl border border-rose-100 bg-petal/40 p-4">
+            <label className="block min-w-0" htmlFor="past-movement-date">
+              <span className="text-sm font-semibold text-rose-800">Date</span>
+              <input
+                id="past-movement-date"
+                type="date"
+                value={pastDate}
+                max={yesterday}
+                onChange={(event) => {
+                  setPastDate(event.target.value);
+                  setFormError(undefined);
+                }}
+                className={fieldClass}
+              />
+            </label>
+            <label className="block min-w-0" htmlFor="past-movement-count">
+              <span className="text-sm font-semibold text-rose-800">Sets</span>
+              <input
+                id="past-movement-count"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={MAX_MOVEMENT_SETS}
+                step={1}
+                value={pastCount}
+                onChange={(event) => setPastCount(event.target.value)}
+                className={fieldClass}
+              />
+            </label>
+          </li>
+        </ul>
         {dateTaken ? (
           <p className="mt-3 text-sm text-rose-800">
-            This date is already saved. Update it in the table.
+            This date is already saved. Update it in the list.
           </p>
         ) : null}
         {formError ? (
@@ -405,39 +336,16 @@ export function BabyMovementTracker() {
         {savedMessage && !dateTaken ? (
           <p className="mt-3 text-sm text-sage-dark">{savedMessage}</p>
         ) : null}
-        {authReady && user ? (
-          <div className="mt-6">
-            <p className="text-sm leading-6 text-rose-800">
-              Double check the current values. Remember replaces the log saved
-              on your account.
-            </p>
-            <button
-              type="button"
-              className="mt-3 inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-sage px-5 text-sm font-semibold text-white hover:bg-sage-dark disabled:cursor-default disabled:opacity-40"
-              onClick={() => void remember()}
-              disabled={!ready || syncing !== null}
-            >
-              {syncing === "remember" ? "Saving…" : "Remember"}
-            </button>
-            {rememberError ? (
-              <p className="mt-3 text-sm text-rose-800">{rememberError}</p>
-            ) : null}
-            {rememberMessage ? (
-              <p className="mt-3 text-sm text-sage-dark">{rememberMessage}</p>
-            ) : null}
-          </div>
-        ) : null}
-        {authReady && !user ? (
-          <p className="mt-6 text-sm leading-6 text-rose-900/75">
-            <Link
-              href="/login"
-              className="font-semibold text-rose-800 underline-offset-2 hover:underline"
-            >
-              Sign in
-            </Link>{" "}
-            to remember this log on your account.
-          </p>
-        ) : null}
+        <div className="mt-6">
+          <button
+            type="button"
+            className="mt-3 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-sage px-5 text-sm font-semibold text-white hover:bg-sage-dark disabled:cursor-default disabled:opacity-40 sm:w-auto"
+            onClick={remember}
+            disabled={!ready}
+          >
+            Remember
+          </button>
+        </div>
       </section>
 
       <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
@@ -484,10 +392,12 @@ export function BabyMovementTracker() {
 
 function MovementDayRow({
   day,
+  drafts,
   onUpdate,
   onDelete,
 }: {
   day: MovementDay;
+  drafts: { current: Record<string, string> };
   onUpdate: (date: string, count: number) => void;
   onDelete: (date: string) => void;
 }) {
@@ -495,61 +405,61 @@ function MovementDayRow({
 
   useEffect(() => {
     setCount(String(day.count));
-  }, [day.date, day.count]);
+    drafts.current[day.date] = String(day.count);
+    return () => {
+      delete drafts.current[day.date];
+    };
+  }, [day.date, day.count, drafts]);
 
   const parsed = parseMovementCount(count);
   const canUpdate = parsed !== null && parsed !== day.count;
 
   return (
-    <tr className="border-b border-rose-50">
-      <th scope="row" className="py-3 pr-3 text-left font-medium text-rose-950">
-        {formatCareDate(day.date)}
-      </th>
-      <td className="py-3 pr-3">
+    <li className="space-y-3 rounded-3xl border border-rose-100 p-4">
+      <p className="text-base font-medium text-rose-950">{formatCareDate(day.date)}</p>
+      <label className="block min-w-0" htmlFor={`movement-count-${day.date}`}>
+        <span className="text-sm font-semibold text-rose-800">Sets</span>
         <input
           id={`movement-count-${day.date}`}
           type="number"
-          aria-label={`Sets for ${formatCareDate(day.date)}`}
           inputMode="numeric"
           min={0}
           max={MAX_MOVEMENT_SETS}
           step={1}
           value={count}
-          onChange={(event) => setCount(event.target.value)}
-          className="box-border h-11 w-24 rounded-2xl border border-rose-200 bg-petal px-3 text-sm text-rose-950 outline-none focus:border-rose-400"
+          onChange={(event) => {
+            setCount(event.target.value);
+            drafts.current[day.date] = event.target.value;
+          }}
+          className={fieldClass}
         />
-      </td>
-      <td className="py-3">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="inline-flex h-11 items-center justify-center rounded-full bg-sage px-4 text-sm font-semibold text-white hover:bg-sage-dark disabled:cursor-default disabled:opacity-40"
-            disabled={!canUpdate}
-            onClick={() => {
-              if (parsed === null) return;
-              onUpdate(day.date, parsed);
-            }}
-          >
-            Update
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full border border-rose-200 px-4 text-sm font-semibold text-rose-800"
-            onClick={() => onDelete(day.date)}
-          >
-            Delete
-          </button>
-        </div>
-      </td>
-    </tr>
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-sage px-4 text-sm font-semibold text-white hover:bg-sage-dark disabled:cursor-default disabled:opacity-40"
+          disabled={!canUpdate}
+          onClick={() => {
+            if (parsed === null) return;
+            onUpdate(day.date, parsed);
+          }}
+        >
+          Update
+        </button>
+        <button
+          type="button"
+          className="inline-flex h-12 cursor-pointer items-center justify-center rounded-full border border-rose-200 px-4 text-sm font-semibold text-rose-800"
+          onClick={() => onDelete(day.date)}
+        >
+          Delete
+        </button>
+      </div>
+    </li>
   );
 }
 
-function syncErrorMessage(error: string) {
-  if (error === "unauthorized") return "Sign in again to use the saved log.";
-  if (error === "counts") return "This log could not be saved.";
-  return "The saved log could not be reached.";
-}
+const fieldClass =
+  "mt-1 block h-12 w-full min-w-0 max-w-full rounded-2xl border border-rose-200 bg-white px-3 text-base text-rose-950 outline-none focus:border-rose-400";
 
 const circleButton =
   "inline-flex cursor-pointer items-center justify-center rounded-full border-2 border-[#0b3220] bg-transparent text-[#06fd91] transition-[background-color,border-color] duration-500 ease-out active:border-[#06fd91] active:bg-[rgba(6,253,145,0.1)] active:duration-0 disabled:cursor-default disabled:opacity-40";

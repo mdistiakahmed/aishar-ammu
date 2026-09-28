@@ -3,50 +3,48 @@
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { api } from "@/lib/api-client";
 import type { BabyName } from "@/lib/baby-names";
+import { favouriteNamesKey, readFavouriteNameIds, toggleFavouriteNameId } from "@/lib/favourite-names";
 
 export function FavouriteNameList({ names }: { names: BabyName[] }) {
   const { user, ready } = useAuth();
   const [saved, setSaved] = useState<string[]>([]);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [pendingNameId, setPendingNameId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
       setSaved([]);
       return;
     }
+    const signedIn = user;
 
-    let cancelled = false;
-    api<{ nameIds: string[] }>("/api/favourites/names").then((result) => {
-      if (cancelled || !result.ok) return;
-      setSaved(result.data.nameIds);
-    });
-    return () => {
-      cancelled = true;
-    };
+    function refresh() {
+      setSaved(readFavouriteNameIds(signedIn.id));
+    }
+
+    refresh();
+
+    function onStorage(event: StorageEvent) {
+      if (event.key !== favouriteNamesKey(signedIn.id)) return;
+      refresh();
+    }
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, [user]);
 
-  async function onToggle(nameId: string) {
+  function onToggle(nameId: string) {
     if (!ready) return;
     if (!user) {
       setLoginOpen(true);
       return;
     }
 
-    setPendingNameId(nameId);
-    const isSaved = saved.includes(nameId);
-    const result = isSaved
-      ? await api<{ nameIds: string[] }>(`/api/favourites/names?nameId=${encodeURIComponent(nameId)}`, {
-          method: "DELETE",
-        })
-      : await api<{ nameIds: string[] }>("/api/favourites/names", {
-          method: "POST",
-          body: JSON.stringify({ nameId }),
-        });
-    setPendingNameId(null);
-    if (result.ok) setSaved(result.data.nameIds);
+    try {
+      setSaved(toggleFavouriteNameId(user.id, nameId));
+    } catch {
+      setSaved(readFavouriteNameIds(user.id));
+    }
   }
 
   return (
@@ -54,7 +52,6 @@ export function FavouriteNameList({ names }: { names: BabyName[] }) {
       <ul className="mt-6 space-y-3">
         {names.map((item) => {
           const isSaved = saved.includes(item.id);
-          const busy = pendingNameId === item.id;
           return (
             <li
               key={item.id}
@@ -66,17 +63,11 @@ export function FavouriteNameList({ names }: { names: BabyName[] }) {
               </div>
               <button
                 type="button"
-                disabled={busy || !ready}
-                onClick={() => void onToggle(item.id)}
+                disabled={!ready}
+                onClick={() => onToggle(item.id)}
                 className="inline-flex h-12 w-full shrink-0 items-center justify-center rounded-full border border-rose-200 bg-petal px-4 text-sm font-semibold text-rose-800 hover:bg-rose-50 disabled:opacity-70 sm:w-auto"
               >
-                {busy
-                  ? isSaved
-                    ? "Removing…"
-                    : "Saving…"
-                  : isSaved
-                    ? "Remove from shortlist"
-                    : "Add to shortlist"}
+                {isSaved ? "Remove from shortlist" : "Add to shortlist"}
               </button>
             </li>
           );

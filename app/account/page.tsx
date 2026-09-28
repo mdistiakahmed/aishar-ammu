@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ProfileBasicsForm } from "@/components/profile/ProfileBasicsForm";
 import { ProfileStatus } from "@/components/profile/ProfileStatus";
-import { api } from "@/lib/api-client";
+import { removeLocalWeightLog, saveLocalWeightLog } from "@/lib/care-details";
 import { utcToday } from "@/lib/pregnancy";
-import { weightOnDate, type WeightLog } from "@/lib/weights";
+import { weightOnDate } from "@/lib/weights";
 
 export default function AccountPage() {
-  const { user, logs, refresh, logout } = useAuth();
+  const { user, logs, setMe } = useAuth();
   const router = useRouter();
   const [status, setStatus] = useState<{ saved?: string; error?: string }>({});
 
@@ -19,45 +19,35 @@ export default function AccountPage() {
   }, [router, user]);
 
   if (!user) return null;
+  const signedInUser = user;
 
-  async function upsertLog(formData: FormData) {
+  function upsertLog(formData: FormData) {
     setStatus({});
-    const result = await api<{ logs: WeightLog[] }>("/api/weights", {
-      method: "PUT",
-      body: JSON.stringify({
+    try {
+      const result = saveLocalWeightLog(signedInUser, logs, {
         loggedOn: formData.get("loggedOn"),
         weightKg: formData.get("weightKg"),
-      }),
-    });
-    if (!result.ok) {
-      if (result.status === 401) {
-        await logout();
+      });
+      if (!result.ok) {
+        setStatus({ error: result.error });
         return;
       }
-      setStatus({ error: result.error });
-      return;
+      setMe(result);
+      setStatus({ saved: "1" });
+    } catch {
+      setStatus({ error: "db" });
     }
-    await refresh();
-    setStatus({ saved: "1" });
   }
 
-  async function deleteLog(formData: FormData) {
+  function deleteLog(formData: FormData) {
     setStatus({});
-    const loggedOn = String(formData.get("loggedOn") ?? "");
-    const result = await api<{ logs: WeightLog[] }>(
-      `/api/weights?loggedOn=${encodeURIComponent(loggedOn)}`,
-      { method: "DELETE" },
-    );
-    if (!result.ok) {
-      if (result.status === 401) {
-        await logout();
-        return;
-      }
-      setStatus({ error: result.error });
-      return;
+    try {
+      const loggedOn = String(formData.get("loggedOn") ?? "");
+      setMe(removeLocalWeightLog(signedInUser, logs, loggedOn));
+      setStatus({ saved: "1" });
+    } catch {
+      setStatus({ error: "db" });
     }
-    await refresh();
-    setStatus({ saved: "1" });
   }
 
   return (

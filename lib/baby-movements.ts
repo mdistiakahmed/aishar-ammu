@@ -77,18 +77,6 @@ export function parseMovementCount(value: unknown) {
   return count;
 }
 
-export function parseMovementLogPayload(value: unknown): MovementLog | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const log: MovementLog = {};
-  for (const [date, count] of Object.entries(value)) {
-    if (!parseOptionalDate(date)) return null;
-    if (typeof count !== "number" || !Number.isInteger(count)) return null;
-    if (count < 0 || count > MAX_MOVEMENT_SETS) return null;
-    log[date] = count;
-  }
-  return log;
-}
-
 export function parsePastMovementDate(value: unknown, today: string) {
   const date = parseOptionalDate(value);
   if (!date || date >= today) return null;

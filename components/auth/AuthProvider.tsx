@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { api, clearToken, getToken, setToken, type MeResponse } from "@/lib/api-client";
+import { careDetailsKey, hydrateCareDetails, loadStoredCareDetails } from "@/lib/care-details";
 import type { SessionUser } from "@/lib/user";
 import type { WeightLog } from "@/lib/weights";
 
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLogs([]);
       return;
     }
-    setMe(result.data);
+    setMe(hydrateCareDetails(result.data.user, result.data.logs));
   }, [setMe]);
 
   useEffect(() => {
@@ -59,11 +60,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLogs([]);
         return false;
       }
-      setMe(result.data);
+      setMe(hydrateCareDetails(result.data.user, result.data.logs));
       return true;
     },
     [setMe],
   );
+
+  const userRef = useRef(user);
+  userRef.current = user;
+
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      const current = userRef.current;
+      if (!current || event.key !== careDetailsKey(current.id)) return;
+      const next = loadStoredCareDetails(current);
+      if (!next) return;
+      setUser(next.user);
+      setLogs(next.logs);
+    }
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const logout = useCallback(async () => {
     await api("/api/auth/logout", { method: "POST" });
