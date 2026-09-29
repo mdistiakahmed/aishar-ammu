@@ -77,7 +77,7 @@ export function DashboardTrackerCharts() {
   const weightYTicks = chartWeightTicks(weightRows);
 
   return (
-    <div className="space-y-5">
+    <div className="mt-10! space-y-5 sm:mt-14!">
       <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
         <div>
           <h2 className="text-xl font-semibold text-rose-950">Daily sets</h2>

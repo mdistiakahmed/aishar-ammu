@@ -1,19 +1,51 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import type { IconType } from "react-icons";
-import { LuBaby, LuBookOpen, LuHouse, LuScale, LuSparkles, LuX } from "react-icons/lu";
-import type { SessionUser } from "@/lib/user";
+import {
+  LuCircleDot,
+  LuDiamond,
+  LuHeart,
+  LuHouse,
+  LuMoon,
+  LuScale,
+  LuSquare,
+  LuX,
+} from "react-icons/lu";
 import { brand, brandBn } from "@/lib/constants";
+import type { SessionUser } from "@/lib/user";
 
-const navItems: { href: string; label: string; icon: IconType }[] = [
-  { href: "/", label: "Home", icon: LuHouse },
-  { href: "/baby-names", label: "Baby names", icon: LuSparkles },
-  { href: "/baby-movement", label: "Baby Movement Tracker", icon: LuBaby },
-  { href: "/mother-weight", label: "Mother Weight Tracker", icon: LuScale },
-  { href: "/duas", label: "Islamic duas", icon: LuBookOpen },
+const groups: { title: string; items: { href: string; label: string; icon: IconType }[] }[] = [
+  {
+    title: "আমার গর্ভাবস্থা",
+    items: [
+      { href: "/", label: "হোম", icon: LuHouse },
+      { href: "/baby-movement", label: "বেবি মুভমেন্ট", icon: LuCircleDot },
+      { href: "/mother-weight", label: "মায়ের ওজন", icon: LuScale },
+    ],
+  },
+  {
+    title: "গর্ভাবস্থা সম্পর্কে জানুন",
+    items: [
+      { href: "/pregnancy-weeks", label: "সপ্তাহ অনুযায়ী গর্ভাবস্থা", icon: LuSquare },
+      { href: "/common-concerns", label: "সাধারণ সমস্যা ও সমাধান", icon: LuHeart },
+    ],
+  },
+  {
+    title: "আরও",
+    items: [
+      { href: "/baby-names", label: "শিশুর নাম", icon: LuDiamond },
+      { href: "/duas", label: "ইসলামিক দোয়া", icon: LuMoon },
+    ],
+  },
 ];
+
+function isCurrent(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function Sidebar({
   user,
@@ -24,6 +56,8 @@ export function Sidebar({
   open: boolean;
   onClose: () => void;
 }) {
+  const pathname = usePathname();
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -61,31 +95,45 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className="min-w-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-3 py-4">
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="flex min-h-12 items-center gap-3 rounded-2xl px-3 text-sm font-medium text-rose-950 hover:bg-rose-50"
-                >
-                  <Icon className="h-5 w-5 text-rose-700" />
-                  {item.label}
-                </Link>
-              );
-            })}
+        <div className="sidebar-scroll min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-5">
+          <nav className="space-y-5">
+            {groups.map((group, index) => (
+              <div key={group.title} className={index > 0 ? "border-t border-rose-100 pt-4" : ""}>
+                <p className="font-bn px-3 text-xs text-rose-900/45">{group.title}</p>
+                <ul className="mt-2 space-y-1">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const current = isCurrent(pathname, item.href);
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          onClick={onClose}
+                          aria-current={current ? "page" : undefined}
+                          className={`font-bn flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] font-medium leading-snug ${
+                            current
+                              ? "bg-rose-100 text-rose-950"
+                              : "text-rose-950 hover:bg-rose-50"
+                          }`}
+                        >
+                          <Icon className="h-5 w-5 shrink-0 text-rose-900" aria-hidden="true" />
+                          {item.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </nav>
 
           {user ? (
             <Link
               href="/account"
               onClick={onClose}
-              className="block rounded-2xl border border-rose-100 bg-petal px-3 py-3 text-center text-sm font-semibold text-rose-800 underline-offset-2 hover:underline"
+              className="font-bn mt-5 block rounded-xl border border-rose-100 bg-petal px-3 py-3 text-center text-sm font-semibold text-rose-800 hover:bg-rose-50"
             >
-              Account & weight history
+              অ্যাকাউন্ট
             </Link>
           ) : null}
         </div>
