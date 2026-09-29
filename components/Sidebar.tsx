@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import type { IconType } from "react-icons";
-import { LuBaby, LuBookOpen, LuHouse, LuSparkles, LuX } from "react-icons/lu";
+import { LuBaby, LuBookOpen, LuHouse, LuScale, LuSparkles, LuX } from "react-icons/lu";
 import type { SessionUser } from "@/lib/user";
 import { brand, brandBn } from "@/lib/constants";
 
@@ -11,6 +11,7 @@ const navItems: { href: string; label: string; icon: IconType }[] = [
   { href: "/", label: "Home", icon: LuHouse },
   { href: "/baby-names", label: "Baby names", icon: LuSparkles },
   { href: "/baby-movement", label: "Baby Movement Tracker", icon: LuBaby },
+  { href: "/mother-weight", label: "Mother Weight Tracker", icon: LuScale },
   { href: "/duas", label: "Islamic duas", icon: LuBookOpen },
 ];
 

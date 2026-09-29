@@ -3,27 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { LuMinus, LuPlus } from "react-icons/lu";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
-  chartColors,
-  tooltipStyle,
-} from "@/components/homepage/dashboard/chartTheme";
+  MovementSetsChart,
+  buildMovementChartRows,
+  movementChartMax,
+} from "@/components/charts/MovementSetsChart";
 import { formatCareDate } from "@/lib/dates";
 import {
   BABY_MOVEMENT_STORAGE_KEY,
   earlierMovementDays,
   localDateKey,
   MAX_MOVEMENT_SETS,
-  MOVEMENT_REFERENCE_COUNT,
-  movementChartDays,
   movementCount,
   parseMovementCount,
   parsePastMovementDate,
@@ -152,16 +141,8 @@ export function BabyMovementTracker() {
 
   const todayCount = today ? movementCount(log, today) : 0;
   const earlierDays = today ? earlierMovementDays(log, today) : [];
-  const chartRows = today
-    ? movementChartDays(log, today).map((day) => ({
-        ...day,
-        label: shortDayLabel(day.date),
-      }))
-    : [];
-  const chartMax = Math.max(
-    MOVEMENT_REFERENCE_COUNT,
-    ...chartRows.map((row) => row.count),
-  );
+  const chartRows = buildMovementChartRows(log, today);
+  const chartMax = movementChartMax(chartRows);
   const yesterday = today ? shiftDate(today, -1) : "";
   const newDate = today ? parsePastMovementDate(pastDate, today) : null;
   const dateTaken = Boolean(
@@ -225,58 +206,7 @@ export function BabyMovementTracker() {
           প্রতিটি বার একটি দিনের নড়াচড়ার সংখ্যা দেখায়। লাল রেখাটি শুধু সাধারণ
           ধারণার জন্য ১০টি নড়াচড়ার একটি নির্দেশক হিসেবে দেওয়া হয়েছে।
         </p>
-        <div className="mt-4 h-56 w-full min-w-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartRows}
-              margin={{ top: 16, right: 8, left: 0, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#fecdd3"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 10, fill: chartColors.ink }}
-                interval="preserveStartEnd"
-              />
-              <YAxis
-                domain={[0, chartMax]}
-                allowDecimals={false}
-                tick={{ fontSize: 10, fill: chartColors.ink }}
-                width={28}
-              />
-              <Tooltip
-                contentStyle={tooltipStyle}
-                formatter={(value) => [`${value} sets`, "Sets"]}
-                labelFormatter={(_, payload) => {
-                  const date = payload?.[0]?.payload?.date;
-                  return typeof date === "string" ? formatCareDate(date) : "";
-                }}
-              />
-              <ReferenceLine
-                y={MOVEMENT_REFERENCE_COUNT}
-                stroke="#dc2626"
-                strokeWidth={2}
-                ifOverflow="extendDomain"
-                label={{
-                  value: "Minimum",
-                  fill: "#dc2626",
-                  fontSize: 11,
-                  position: "insideTopRight",
-                }}
-              />
-              <Bar
-                dataKey="count"
-                name="Sets"
-                fill={chartColors.sage}
-                radius={[6, 6, 0, 0]}
-                maxBarSize={36}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <MovementSetsChart rows={chartRows} chartMax={chartMax} />
       </section>
 
       <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
@@ -463,15 +393,6 @@ const fieldClass =
 
 const circleButton =
   "inline-flex cursor-pointer items-center justify-center rounded-full border-2 border-[#0b3220] bg-transparent text-[#06fd91] transition-[background-color,border-color] duration-500 ease-out active:border-[#06fd91] active:bg-[rgba(6,253,145,0.1)] active:duration-0 disabled:cursor-default disabled:opacity-40";
-
-function shortDayLabel(dateKey: string) {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
-}
 
 function shiftDate(dateKey: string, days: number) {
   const [year, month, day] = dateKey.split("-").map(Number);
