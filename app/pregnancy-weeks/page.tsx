@@ -1,73 +1,78 @@
 import type { Metadata } from "next";
-import pregnancyWeekByWeek from "@/lib/pregnancy-week-by-week.json";
+import { weekSpanLabel } from "@/app/pregnancy-weeks/_lib/format";
+import { ExpectingIllustration, FetusMark } from "@/app/pregnancy-weeks/_lib/illustrations";
+import { TONE_CLASS, TRIMESTERS } from "@/app/pregnancy-weeks/_lib/ranges";
+import { CareNote, RangeCard, WeeksBreadcrumb } from "@/app/pregnancy-weeks/_lib/ui";
 
 export const metadata: Metadata = {
   title: "সপ্তাহ অনুযায়ী গর্ভাবস্থা",
   description:
-    "গর্ভাবস্থার প্রতি সপ্তাহে শিশু, শরীর ও দৈনন্দিন যত্নের সাধারণ পাঠ। চিকিৎসকের পরামর্শের বিকল্প নয়।",
+    "গর্ভাবস্থার ১ম থেকে ৪০তম সপ্তাহ পর্যন্ত শিশুর বৃদ্ধি ও মায়ের শরীরের পরিবর্তন। সাধারণ পাঠ, চিকিৎসকের পরামর্শের বিকল্প নয়।",
 };
-
-const weeks = pregnancyWeekByWeek.data;
 
 export default function PregnancyWeeksPage() {
   return (
-    <article className="mx-auto max-w-2xl space-y-4">
-      <header className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-        <p className="font-bn text-sm font-semibold text-rose-700">গর্ভাবস্থা সম্পর্কে জানুন</p>
-        <h1 className="font-bn! mt-3 text-3xl font-semibold tracking-tight text-rose-950">
-          সপ্তাহ অনুযায়ী গর্ভাবস্থা
-        </h1>
-        <p className="font-bn! mt-3 text-sm leading-7 text-rose-900/75">
-          প্রথম থেকে চল্লিশতম সপ্তাহ পর্যন্ত সাধারণ পাঠ। প্রতিটি শরীর একরকম নয়। কোনো লক্ষণ নিয়ে
-          চিন্তা হলে আপনার চিকিৎসক বা মিডওয়াইফের সঙ্গে কথা বলুন।
-        </p>
-        <nav aria-label="সপ্তাহ বেছে নিন" className="mt-5 flex gap-2 overflow-x-auto pb-1">
-          {weeks.map((week) => (
-            <a
-              key={week.week}
-              href={`#week-${week.week}`}
-              className="font-bn inline-flex h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-rose-100 bg-rose-50 px-3 text-sm font-semibold text-rose-900"
-            >
-              {toBnDigits(week.week)}
-            </a>
-          ))}
-        </nav>
+    <article className="space-y-4">
+      <WeeksBreadcrumb
+        items={[{ href: "/", label: "হোম" }, { label: "সপ্তাহ অনুযায়ী গর্ভাবস্থা" }]}
+      />
+
+      <header className="overflow-hidden rounded-[1.75rem] border border-rose-100 bg-[#fff6f8] px-5 py-6 shadow-sm sm:px-8 sm:py-7">
+        <div className="grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_15rem] sm:gap-6">
+          <div>
+            <h1 className="font-bn! text-[1.65rem] font-bold leading-tight tracking-tight text-[#7a2340] sm:text-4xl">
+              গর্ভাবস্থা: সপ্তাহ অনুযায়ী
+            </h1>
+            <p className="font-bn mt-3 max-w-xl text-sm leading-7 text-rose-950/75 sm:text-[15px]">
+              গর্ভাবস্থার ১ম থেকে ৪০তম সপ্তাহ পর্যন্ত শিশুর বৃদ্ধি, মায়ের শরীরের পরিবর্তন এবং প্রতিটি
+              সপ্তাহে কী কী জানা ও করার আছে তা সহজভাবে জানুন।
+            </p>
+          </div>
+          <ExpectingIllustration className="mx-auto h-40 w-full max-w-64 sm:h-48 sm:max-w-none" />
+        </div>
       </header>
 
-      {weeks.map((week) => (
-        <section
-          key={week.week}
-          id={`week-${week.week}`}
-          className="scroll-mt-24 rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8"
-        >
-          <h2 className="font-bn! text-2xl font-semibold text-rose-950">
-            সপ্তাহ {toBnDigits(week.week)}
-          </h2>
-          <WeekBlock title="শিশুর দিক" lines={week.yourBaby} />
-          <WeekBlock title="মায়ের শরীর" lines={week.yourBody} />
-          <WeekBlock title="এই সপ্তাহে যা মনে রাখতে পারেন" lines={week.suggestionsThisWeek} />
-        </section>
-      ))}
+      {TRIMESTERS.map((trimester) => {
+        const tone = TONE_CLASS[trimester.tone];
+        return (
+          <section key={trimester.id} className={`rounded-[1.75rem] p-4 sm:p-5 ${tone.panel}`}>
+            <div className="grid gap-4 xl:grid-cols-[13.5rem_minmax(0,1fr)] xl:items-stretch">
+              <div className="flex gap-3 xl:block">
+                <span
+                  className={`inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${tone.icon}`}
+                >
+                  <FetusMark stage={trimester.ranges[0]?.stage ?? 0} className="h-12 w-12" />
+                </span>
+                <div>
+                  <h2 className={`font-bn! text-lg font-bold sm:text-xl ${tone.title}`}>
+                    {trimester.title}
+                  </h2>
+                  <p className={`font-bn mt-0.5 text-sm font-semibold ${tone.muted}`}>
+                    {weekSpanLabel(trimester.from, trimester.to)}
+                  </p>
+                  <p className="font-bn mt-2 text-[13px] leading-6 text-rose-950/75 xl:mt-3">
+                    {trimester.summary}
+                  </p>
+                </div>
+              </div>
+
+              <ul
+                className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${
+                  trimester.ranges.length > 3 ? "xl:grid-cols-4" : "xl:grid-cols-3"
+                }`}
+              >
+                {trimester.ranges.map((range) => (
+                  <li key={range.slug} className="min-w-0">
+                    <RangeCard range={range} tone={trimester.tone} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        );
+      })}
+
+      <CareNote />
     </article>
   );
-}
-
-function WeekBlock({ title, lines }: { title: string; lines: string[] }) {
-  return (
-    <div className="mt-5">
-      <h3 className="font-bn! text-base font-semibold text-rose-800">{title}</h3>
-      <ul className="font-bn! mt-2 space-y-2 text-sm leading-7 text-rose-900/80">
-        {lines.map((line) => (
-          <li key={line} className="flex gap-2">
-            <span aria-hidden="true">•</span>
-            <span>{line}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function toBnDigits(value: number) {
-  return String(value).replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[Number(digit)] ?? digit);
 }
