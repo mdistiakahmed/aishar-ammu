@@ -7,6 +7,7 @@ import type { IconType } from "react-icons";
 import {
   LuCircleDot,
   LuDiamond,
+  LuCalendar,
   LuHeart,
   LuHouse,
   LuMoon,
@@ -29,6 +30,7 @@ const groups: { title: string; items: { href: string; label: string; icon: IconT
     title: "গর্ভাবস্থা সম্পর্কে জানুন",
     items: [
       { href: "/pregnancy-weeks", label: "সপ্তাহ অনুযায়ী গর্ভাবস্থা", icon: LuSquare },
+      { href: "/pregnancy-due-date", label: "সম্ভাব্য প্রসবের তারিখ", icon: LuCalendar },
       { href: "/common-concerns", label: "সাধারণ সমস্যা ও সমাধান", icon: LuHeart },
     ],
   },
