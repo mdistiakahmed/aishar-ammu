@@ -15,7 +15,6 @@ import {
   LuX,
 } from "react-icons/lu";
 import { brand, brandBn } from "@/lib/constants";
-import type { SessionUser } from "@/lib/user";
 
 const groups: { title: string; items: { href: string; label: string; icon: IconType }[] }[] = [
   {
@@ -48,11 +47,9 @@ function isCurrent(pathname: string, href: string) {
 }
 
 export function Sidebar({
-  user,
   open,
   onClose,
 }: {
-  user: SessionUser | null;
   open: boolean;
   onClose: () => void;
 }) {
@@ -126,16 +123,6 @@ export function Sidebar({
               </div>
             ))}
           </nav>
-
-          {user ? (
-            <Link
-              href="/account"
-              onClick={onClose}
-              className="font-bn mt-5 block rounded-xl border border-rose-100 bg-petal px-3 py-3 text-center text-sm font-semibold text-rose-800 hover:bg-rose-50"
-            >
-              অ্যাকাউন্ট
-            </Link>
-          ) : null}
         </div>
       </aside>
     </>
