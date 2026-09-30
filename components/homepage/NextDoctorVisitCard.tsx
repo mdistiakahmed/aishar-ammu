@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { GuestDashCard } from "@/components/homepage/guest/GuestDashCard";
-import { StethoscopeIcon } from "@/components/homepage/guest/GuestDashIcons";
+import { PencilIcon, StethoscopeIcon } from "@/components/homepage/guest/GuestDashIcons";
 import { saveNextDoctorVisitDate } from "@/lib/care-details";
 import { parseOptionalDate } from "@/lib/dates";
 import {
@@ -13,8 +13,6 @@ import {
   writeNextDoctorVisit,
   type NextDoctorVisit,
 } from "@/lib/next-doctor-visit";
-
-const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 
 export function NextDoctorVisitCard({
   previewWhen,
@@ -108,7 +106,7 @@ export function NextDoctorVisitCard({
       ? formatVisitWhen(visit)
       : "Not saved yet"
     : previewWhen;
-  const doctor = user ? visit?.doctorName || "Doctor not set" : "ডা. আয়শা খান";
+  const doctor = user ? visit?.doctorName || "Doctor not set" : "Supatra Suricya";
   const reminder = user ? visitReminder(visit, todayKey) : null;
 
   return (
@@ -125,19 +123,20 @@ export function NextDoctorVisitCard({
             <button
               type="button"
               onClick={openEditor}
-              className="inline-flex h-11 items-center justify-center rounded-full bg-white px-3 text-xs font-semibold text-[#4a4458]"
+              aria-label="Edit"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[#c2255c] hover:bg-black/5"
             >
-              Edit
+              <PencilIcon className="h-3.5 w-3.5" />
             </button>
           ) : null
         }
         className={className}
         bodyClassName="min-h-0 flex-1 justify-center gap-0.5 lg:gap-1"
       >
-        <p className="text-md leading-snug text-[#4a4458]">
+        <p className="text-[0.65rem] leading-snug text-[#4a4458] lg:text-xs">
           <span className="font-semibold">সাক্ষাৎ:</span> {when}
         </p>
-        <p className="text-md leading-snug text-[#6b6680]">{doctor}</p>
+        <p className="text-[0.65rem] leading-snug text-[#6b6680] lg:text-xs">{doctor}</p>
         {reminder ? (
           <p className="mt-1 text-[0.65rem] font-semibold leading-snug text-[#4a4458] lg:text-xs">
             {reminder}
@@ -258,17 +257,19 @@ function localDateKey(date: Date) {
 
 function formatVisitWhen(visit: NextDoctorVisit) {
   const [year, month, day] = visit.date.split("-").map(Number);
-  const label = toBnDigits(
-    new Intl.DateTimeFormat("bn-BD", {
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    }).format(new Date(Date.UTC(year, month - 1, day))),
-  );
+  const label = new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
   if (!visit.time) return label;
-  return `${label}, ${toBnDigits(visit.time)}`;
+  return `${label}, ${formatTimeAmPm(visit.time)}`;
 }
 
-function toBnDigits(value: string) {
-  return value.replace(/\d/g, (digit) => BN_DIGITS[Number(digit)] ?? digit);
+function formatTimeAmPm(time: string) {
+  const [hourText, minute] = time.split(":");
+  const hour = Number(hourText);
+  const period = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minute} ${period}`;
 }

@@ -111,12 +111,11 @@ function formatWeightBn(weightGrams: number) {
 function previewVisitLabel(from: Date) {
   const visit = new Date(from);
   visit.setDate(visit.getDate() + 6);
-  const day = toBnDigits(
-    new Intl.DateTimeFormat("bn-BD", { month: "short", day: "numeric" }).format(
-      visit,
-    ),
-  );
-  return `${day}, সকাল ১০:০০`;
+  const day = new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+  }).format(visit);
+  return `${day}, 10:30 AM`;
 }
 
 function ChevronIcon({
@@ -326,7 +325,7 @@ export function PregnancyDashPreview({
           bodyClassName="items-center gap-1.5 text-center sm:gap-2 lg:gap-3 lg:px-5 lg:py-4"
         >
           <div className="flex shrink-0 items-center justify-center">
-            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[#fff6f1] shadow-inner ring-4 ring-white sm:h-20 sm:w-20 lg:h-36 lg:w-36 lg:ring-[6px]">
+            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-[#fff6f1] shadow-inner ring-4 ring-white sm:h-32 sm:w-32 lg:h-36 lg:w-36 lg:ring-[6px]">
               <PausingGif
                 src="/girl-gif-5.gif"
                 className="h-full w-full object-cover"
