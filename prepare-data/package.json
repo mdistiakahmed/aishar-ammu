@@ -1,0 +1,14 @@
+{
+  "name": "prepare-data",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build girl-name JSON files from the baby-names workbook.",
+  "scripts": {
+    "build": "node build-girl-names.js"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,4 +1,4 @@
-import { isListedBabyNameId } from "@/lib/baby-names";
+import { isListedGirlName } from "@/lib/girl-name-format";
 
 const STORAGE_PREFIX = "aishar-favourite-names:";
 
@@ -18,7 +18,7 @@ export function readFavouriteNameIds(userId: string) {
 }
 
 export function toggleFavouriteNameId(userId: string, nameId: string) {
-  if (!isListedBabyNameId(nameId)) return readFavouriteNameIds(userId);
+  if (!isListedGirlName(nameId)) return readFavouriteNameIds(userId);
   const current = readFavouriteNameIds(userId);
   const next = current.includes(nameId)
     ? current.filter((id) => id !== nameId)
@@ -27,14 +27,12 @@ export function toggleFavouriteNameId(userId: string, nameId: string) {
 }
 
 function writeFavouriteNameIds(userId: string, nameIds: string[]) {
-  const unique = [...new Set(nameIds.filter((id) => isListedBabyNameId(id)))].sort((a, b) =>
-    a.localeCompare(b),
-  );
+  const unique = [...new Set(nameIds.filter((id) => isListedGirlName(id)))].sort((a, b) => a.localeCompare(b));
   window.localStorage.setItem(favouriteNamesKey(userId), JSON.stringify(unique));
   return unique;
 }
 
 function parseNameIds(value: unknown) {
   if (!Array.isArray(value)) return [];
-  return value.filter((id): id is string => typeof id === "string" && isListedBabyNameId(id));
+  return value.filter((id): id is string => typeof id === "string" && isListedGirlName(id));
 }

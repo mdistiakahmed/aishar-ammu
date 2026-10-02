@@ -1,25 +1,39 @@
 import type { Metadata } from "next";
-import { FavouriteNameList } from "@/components/baby-names/FavouriteNameList";
-import { BABY_NAMES } from "@/lib/baby-names";
+import { BabyNamesBrowser } from "@/components/baby-names/BabyNamesBrowser";
+import {
+  girlNameGroupsForLetter,
+  parseGirlNameLetter,
+  parseGirlNameToken,
+} from "@/lib/girl-names";
 
 export const metadata: Metadata = {
   title: "Baby names",
-  description: "A short list of baby names to browse. Educational only.",
+  description:
+    "Browse girl names by letter and token. See full names, popularity, and save favourites when signed in.",
 };
 
-export default function BabyNamesPage() {
+export default async function BabyNamesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const query = await searchParams;
+  const letter = parseGirlNameLetter(query.letter);
+  const tokenParam = parseGirlNameToken(query.token);
+  const groups = girlNameGroupsForLetter(letter);
+
   return (
-    <article className="mx-auto max-w-2xl">
-      <header className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-rose-700">Names</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-rose-950">Baby names</h1>
-        <p className="mt-3 text-sm leading-6 text-rose-900/75">
-          Browse a small sample list. Meanings here are general notes for reading, not a guarantee about a
-          child. Anyone can read this page. Saving a shortlist needs a signed-in account.
+    <article className="mx-auto max-w-4xl">
+      <header className="rounded-4xl border border-mist bg-white p-6 shadow-sm sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sage">Names</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">Baby names</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-dusk">
+          A soft directory of girl names from the collected list. Open a token to see every full name,
+          sorted by popularity.
         </p>
       </header>
 
-      <FavouriteNameList names={BABY_NAMES} />
+      <BabyNamesBrowser letter={letter} groups={groups} tokenParam={tokenParam} />
     </article>
   );
 }
