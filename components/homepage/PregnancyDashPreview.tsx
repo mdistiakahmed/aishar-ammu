@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { MotherChangeBullets } from "@/components/homepage/MotherChangeBullets";
 import { NextDoctorVisitCard } from "@/components/homepage/NextDoctorVisitCard";
@@ -12,7 +18,10 @@ import {
 import babyWeekSize from "@/lib/baby-week-size.json";
 import pregnancyWeekByWeek from "@/lib/pregnancy-week-by-week.json";
 import { formatEnglishVisit, greetingForHour } from "@/lib/day-part";
-import { readSavedDeliveryDate, type SavedDeliveryDate } from "@/lib/delivery-date";
+import {
+  readSavedDeliveryDate,
+  type SavedDeliveryDate,
+} from "@/lib/delivery-date";
 import {
   addUtcDays,
   buildPregnancySnapshot,
@@ -20,9 +29,9 @@ import {
   utcToday,
 } from "@/lib/pregnancy";
 
-/** Signed-out preview until a saved pregnancy start date is available. */
-const GUEST_WEEK = 29;
-const GUEST_DAY = 2;
+/** Signed-out preview: second pregnancy month, 6 weeks and 1 day. */
+const GUEST_WEEK = 6;
+const GUEST_DAY = 1;
 
 /** Week-by-week writing covers pregnancy weeks 1 through 40. */
 const CONTENT_MIN_WEEK = 1;
@@ -112,10 +121,12 @@ function formatWeightBn(weightGrams: number) {
   return `${toBnDigits(label)} কেজি`;
 }
 
-/** Sample visit a few days ahead so the preview card feels current. */
+/** Sample first checkup at week 8, fourteen days after the 6-week-1-day preview. */
+const GUEST_VISIT_DAYS = 14;
+
 function previewVisitLabel(from: Date) {
   const visit = new Date(from);
-  visit.setDate(visit.getDate() + 6);
+  visit.setDate(visit.getDate() + GUEST_VISIT_DAYS);
   return formatEnglishVisit(
     visit.getFullYear(),
     visit.getMonth() + 1,
@@ -175,7 +186,7 @@ export function PregnancyDashPreview({
 }: {
   /** Guest landing locks to the viewport; logged-in pages size to content. */
   fillViewport?: boolean;
-  /** Saved start date. Omit for the signed-out preview (29 weeks, 2 days). */
+  /** Saved start date. Omit for the signed-out preview (6 weeks, 1 day). */
   pregnancyStartDate?: string | null;
   /** Name shown after the time-of-day greeting. Omit for the signed-out preview. */
   preferredName?: string | null;
@@ -183,27 +194,37 @@ export function PregnancyDashPreview({
   afterGreeting?: ReactNode;
 }) {
   const [now, setNow] = useState(() => new Date());
-  const [savedDelivery, setSavedDelivery] = useState<SavedDeliveryDate | null>();
-  const deliveryDue = savedDelivery === undefined ? undefined : savedDelivery?.due ?? null;
+  const [savedDelivery, setSavedDelivery] =
+    useState<SavedDeliveryDate | null>();
+  const isGuest = pregnancyStartDate === undefined;
+  const deliveryDue = isGuest
+    ? null
+    : savedDelivery === undefined
+      ? undefined
+      : (savedDelivery?.due ?? null);
 
   useLayoutEffect(() => {
     setNow(new Date());
+    if (isGuest) {
+      setSavedDelivery(null);
+      return;
+    }
     setSavedDelivery(readSavedDeliveryDate());
-  }, []);
+  }, [isGuest]);
 
   const snapshot = useMemo(() => {
-    const savedStart = savedDelivery?.start;
+    const savedStart = isGuest ? undefined : savedDelivery?.start;
     const start = savedStart
       ? savedStart
-      : pregnancyStartDate === undefined
+      : isGuest
         ? addUtcDays(utcToday(), -(GUEST_WEEK * 7 + GUEST_DAY))
         : pregnancyStartDate;
     return buildPregnancySnapshot({
       pregnancyStartDate: start,
-      dueDate: savedDelivery?.due ?? null,
+      dueDate: isGuest ? null : (savedDelivery?.due ?? null),
       nextDoctorVisitDate: null,
     });
-  }, [pregnancyStartDate, savedDelivery]);
+  }, [isGuest, pregnancyStartDate, savedDelivery]);
 
   const [viewedWeek, setViewedWeek] = useState(snapshot.week);
 
@@ -251,6 +272,25 @@ export function PregnancyDashPreview({
         <p className="mt-0.5 text-[0.65rem] text-[#5f7c82] sm:text-xs lg:mt-1 lg:text-sm">
           {formatDisplayDate(now)}
         </p>
+        {isGuest ? (
+          <p className="font-sans mt-3 max-w-xl rounded-2xl border border-[#f0d3c6] bg-[linear-gradient(135deg,#fff7f4_0%,#fff1e8_55%,#fde8ef_100%)] px-4 py-3 text-sm leading-6 text-[#4a3428] shadow-[0_12px_28px_-20px_rgba(74,52,40,0.55)]">
+            Please{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-[#c45c45] underline decoration-[#e7b4a4] underline-offset-4 hover:text-[#9a4030]"
+            >
+              Log in
+            </Link>
+            {" / "}
+            <Link
+              href="/login"
+              className="font-semibold text-[#c45c45] underline decoration-[#e7b4a4] underline-offset-4 hover:text-[#9a4030]"
+            >
+              Sign up
+            </Link>{" "}
+            to get more personalized suggestions.
+          </p>
+        ) : null}
       </header>
 
       {afterGreeting ? <div className="font-sans">{afterGreeting}</div> : null}
@@ -319,7 +359,11 @@ export function PregnancyDashPreview({
             <p className="text-sm font-medium leading-tight text-[#5f7c82] lg:text-xs">
               Delivery date
             </p>
-            {deliveryDue ? (
+            {isGuest ? (
+              <p className="mt-0.5 text-base font-semibold leading-tight text-ink lg:text-base">
+                {formatIsoDateBn(snapshot.due)}
+              </p>
+            ) : deliveryDue ? (
               <p className="mt-0.5 text-base font-semibold leading-tight text-ink lg:text-base">
                 {formatIsoDateBn(deliveryDue)}
               </p>
@@ -378,11 +422,46 @@ export function PregnancyDashPreview({
           </p>
         </GuestDashCard>
 
-        <NextDoctorVisitCard
-          previewWhen={visitWhen}
-          note={otherWeekNote}
-          className="min-h-52 self-start lg:col-start-3 lg:row-start-1 lg:min-h-64"
-        />
+        {isGuest ? (
+          <GuestDashCard
+            title="Next Doctor Visit"
+            headerClassName="bg-mist"
+            titleClassName="text-[#1e3a38]"
+            className="min-h-52 self-start lg:col-start-3 lg:row-start-1 lg:min-h-64"
+            bodyClassName="min-h-0 flex-1"
+          >
+            <div className="flex min-h-0 flex-1 items-center gap-4 lg:gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold leading-snug text-ink sm:text-base lg:text-xs">
+                  {visitWhen}
+                </p>
+                <p className="mt-1 text-sm leading-snug text-[#3e4a46] sm:text-base lg:text-sm">
+                  ডাঃ সিদরাতুল মুনতাহা
+                </p>
+                <p className="mt-1 text-sm font-semibold leading-snug text-[#3d7a76] sm:text-base lg:text-xs">
+                  {GUEST_VISIT_DAYS} days remaining
+                </p>
+                {otherWeekNote ? (
+                  <p className="mt-1 text-sm leading-snug text-[#8a5a42] lg:text-xs">
+                    {otherWeekNote}
+                  </p>
+                ) : null}
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/doctor.png"
+                alt=""
+                className="h-24 w-24 shrink-0 rounded-full object-cover object-top sm:h-28 sm:w-28 lg:h-24 lg:w-24"
+              />
+            </div>
+          </GuestDashCard>
+        ) : (
+          <NextDoctorVisitCard
+            previewWhen={visitWhen}
+            note={otherWeekNote}
+            className="min-h-52 self-start lg:col-start-3 lg:row-start-1 lg:min-h-64"
+          />
+        )}
 
         <GuestDashCard
           title={
