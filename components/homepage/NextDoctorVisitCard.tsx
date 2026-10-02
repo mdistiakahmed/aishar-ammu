@@ -5,6 +5,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { GuestDashCard } from "@/components/homepage/guest/GuestDashCard";
 import { PencilIcon } from "@/components/homepage/guest/GuestDashIcons";
 import { saveNextDoctorVisitDate } from "@/lib/care-details";
+import { formatEnglishVisit } from "@/lib/day-part";
 import { parseOptionalDate } from "@/lib/dates";
 import {
   nextDoctorVisitKey,
@@ -106,13 +107,15 @@ export function NextDoctorVisitCard({
       ? formatVisitWhen(visit)
       : "Not saved yet"
     : previewWhen;
-  const doctor = user ? visit?.doctorName || "Doctor not set" : "Supatra Suricya";
+  const doctor = user
+    ? visit?.doctorName || "Doctor not set"
+    : "Supatra Suricya";
   const reminder = user ? visitReminder(visit, todayKey) : null;
 
   return (
     <>
       <GuestDashCard
-        title="পরবর্তী ডাক্তার দেখা"
+        title="Next Doctor Visit"
         headerClassName="bg-mist"
         titleClassName="text-[#1e3a38]"
         headerAction={
@@ -130,32 +133,31 @@ export function NextDoctorVisitCard({
         className={className}
         bodyClassName="min-h-0 flex-1"
       >
-        <div className="flex min-h-0 flex-1 items-center gap-2 lg:gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="flex items-start gap-1 text-[0.65rem] leading-snug text-ink lg:text-xs">
-            <PinIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-peach" />
-            <span>
-              <span className="font-semibold">সাক্ষাৎ:</span> {when}
-            </span>
-          </p>
-          <p className="mt-1 text-[0.65rem] leading-snug text-[#3e4a46] lg:text-sm">{doctor}</p>
-          {reminder ? (
-            <p className="mt-1 text-[0.65rem] font-semibold leading-snug text-[#3d7a76] lg:text-xs">
-              {reminder}
+        <div className="flex min-h-0 flex-1 items-center gap-4 lg:gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="flex items-start gap-1 text-sm leading-snug text-ink sm:text-base lg:text-xs">
+              <span className="font-semibold">{when}</span>
             </p>
-          ) : null}
-          {note ? (
-            <p className="mt-1 text-[0.55rem] leading-snug text-[#8a5a42] sm:text-[0.65rem] lg:text-xs">
-              {note}
+            <p className="mt-1 text-sm leading-snug text-[#3e4a46] sm:text-base lg:text-sm">
+              {doctor}
             </p>
-          ) : null}
-        </div>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/doctor.png"
-          alt=""
-          className="h-8 w-8 shrink-0 rounded-full object-cover object-top lg:h-24 lg:w-24"
-        />
+            {reminder ? (
+              <p className="mt-1 text-sm font-semibold leading-snug text-[#3d7a76] sm:text-base lg:text-xs">
+                {reminder}
+              </p>
+            ) : null}
+            {note ? (
+              <p className="mt-1 text-sm leading-snug text-[#8a5a42] lg:text-xs">
+                {note}
+              </p>
+            ) : null}
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/doctor.png"
+            alt=""
+            className="h-24 w-24 shrink-0 rounded-full object-cover object-top sm:h-28 sm:w-28 lg:h-24 lg:w-24"
+          />
         </div>
       </GuestDashCard>
 
@@ -182,9 +184,7 @@ export function NextDoctorVisitCard({
             </h2>
             <div className="mt-5 flex flex-col gap-4">
               <label className="block min-w-0" htmlFor="next-visit-date">
-                <span className="text-sm font-semibold text-ink">
-                  Date
-                </span>
+                <span className="text-sm font-semibold text-ink">Date</span>
                 <input
                   id="next-visit-date"
                   type="date"
@@ -195,9 +195,7 @@ export function NextDoctorVisitCard({
                 />
               </label>
               <label className="block min-w-0" htmlFor="next-visit-time">
-                <span className="text-sm font-semibold text-ink">
-                  Time
-                </span>
+                <span className="text-sm font-semibold text-ink">Time</span>
                 <input
                   id="next-visit-time"
                   type="time"
@@ -236,7 +234,12 @@ export function NextDoctorVisitCard({
 
 function PinIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M12 2.5a6.2 6.2 0 0 0-6.2 6.2c0 4.6 6.2 12.8 6.2 12.8s6.2-8.2 6.2-12.8A6.2 6.2 0 0 0 12 2.5Zm0 8.4a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4Z" />
     </svg>
   );
@@ -275,19 +278,5 @@ function localDateKey(date: Date) {
 
 function formatVisitWhen(visit: NextDoctorVisit) {
   const [year, month, day] = visit.date.split("-").map(Number);
-  const label = new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
-  if (!visit.time) return label;
-  return `${label}, ${formatTimeAmPm(visit.time)}`;
-}
-
-function formatTimeAmPm(time: string) {
-  const [hourText, minute] = time.split(":");
-  const hour = Number(hourText);
-  const period = hour >= 12 ? "PM" : "AM";
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minute} ${period}`;
+  return formatEnglishVisit(year, month, day, visit.time);
 }

@@ -65,3 +65,21 @@ h3 {
   background: #b7d9d6;
   border-radius: 999px;
 }
+
+@keyframes save-attention {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(29, 122, 69, 0.45);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 8px rgba(29, 122, 69, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .save-attention {
+    animation: save-attention 1.5s ease-in-out infinite;
+  }
+}

@@ -51,12 +51,8 @@ export function estimateFromScan(
   return fromStart(start, addUtcDays(start, NAEGELE_DAYS), today);
 }
 
-/**
- * Usual transfer estimate: count back to a matching period date
- * (14 days plus the embryo's age), then add 280 days.
- */
-export function estimateFromTransfer(transferDate: string, embryoDay: 3 | 5, today = utcToday()) {
-  if (!parseIsoDate(transferDate)) return null;
-  const start = addUtcDays(transferDate, -(14 + embryoDay));
-  return fromStart(start, addUtcDays(start, NAEGELE_DAYS), today);
+/** A doctor-given due date replaces the estimate and recounts the 280-day span from that date. */
+export function estimateFromDoctorDue(due: string, today = utcToday()) {
+  if (!parseIsoDate(due)) return null;
+  return fromStart(addUtcDays(due, -NAEGELE_DAYS), due, today);
 }

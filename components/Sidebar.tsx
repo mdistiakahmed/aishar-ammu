@@ -19,25 +19,40 @@ import {
 } from "react-icons/lu";
 import { brand, brandBn } from "@/lib/constants";
 
-const groups: { title: string; items: { href: string; label: string; icon: IconType }[] }[] = [
+const groups: {
+  title: string;
+  items: { href: string; label: string; icon: IconType }[];
+}[] = [
   {
-    title: "আমার গর্ভাবস্থা",
+    title: "Home",
     items: [
-      { href: "/", label: "হোম", icon: LuHouse },
+      { href: "/", label: "Dashboard", icon: LuHouse },
       { href: "/baby-movement", label: "বেবি মুভমেন্ট", icon: LuCircleDot },
       { href: "/mother-weight", label: "মায়ের ওজন", icon: LuScale },
     ],
   },
   {
-    title: "গর্ভাবস্থা সম্পর্কে জানুন",
+    title: "Learn about Pregnancy",
     items: [
-      { href: "/pregnancy-weeks", label: "সপ্তাহ অনুযায়ী গর্ভাবস্থা", icon: LuSquare },
-      { href: "/pregnancy-due-date", label: "সম্ভাব্য প্রসবের তারিখ", icon: LuCalendar },
-      { href: "/common-concerns", label: "সাধারণ সমস্যা ও সমাধান", icon: LuHeart },
+      {
+        href: "/pregnancy-weeks",
+        label: "সপ্তাহ অনুযায়ী গর্ভাবস্থা",
+        icon: LuSquare,
+      },
+      {
+        href: "/delivery-date-calculator",
+        label: "Delivery Date Calculator",
+        icon: LuCalendar,
+      },
+      {
+        href: "/common-concerns",
+        label: "সাধারণ সমস্যা ও সমাধান",
+        icon: LuHeart,
+      },
     ],
   },
   {
-    title: "আরও",
+    title: "More",
     items: [
       { href: "/baby-names", label: "শিশুর নাম", icon: LuDiamond },
       { href: "/duas", label: "ইসলামিক দোয়া", icon: LuMoon },
@@ -115,7 +130,10 @@ export function Sidebar({
               <LuPanelLeftOpen className="h-5 w-5" aria-hidden="true" />
             ) : (
               <>
-                <LuPanelLeftClose className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <LuPanelLeftClose
+                  className="h-5 w-5 shrink-0"
+                  aria-hidden="true"
+                />
                 <span>Collapse</span>
               </>
             )}
@@ -129,8 +147,13 @@ export function Sidebar({
         >
           <nav className="space-y-5">
             {groups.map((group, index) => (
-              <div key={group.title} className={index > 0 ? "border-t border-[#d5ebe8] pt-4" : ""}>
-                <p className={`font-bn px-3 text-xs text-[#6d8388] ${collapsed ? "lg:sr-only" : ""}`}>
+              <div
+                key={group.title}
+                className={index > 0 ? "border-t border-[#d5ebe8] pt-4" : ""}
+              >
+                <p
+                  className={`font-bn px-3 text-xs text-[#6d8388] ${collapsed ? "lg:sr-only" : ""}`}
+                >
                   {group.title}
                 </p>
                 <ul className="mt-2 space-y-1">
@@ -145,7 +168,9 @@ export function Sidebar({
                           title={collapsed ? item.label : undefined}
                           aria-current={current ? "page" : undefined}
                           className={`font-bn flex min-h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium leading-snug ${
-                            collapsed ? "lg:mx-auto lg:w-12 lg:justify-center lg:gap-0 lg:px-0" : ""
+                            collapsed
+                              ? "lg:mx-auto lg:w-12 lg:justify-center lg:gap-0 lg:px-0"
+                              : ""
                           } ${
                             current
                               ? "bg-lagoon text-white"
@@ -156,7 +181,11 @@ export function Sidebar({
                             className={`h-5 w-5 shrink-0 ${current ? "text-white" : "text-[#5f7c82]"}`}
                             aria-hidden="true"
                           />
-                          <span className={collapsed ? "lg:sr-only" : undefined}>{item.label}</span>
+                          <span
+                            className={collapsed ? "lg:sr-only" : undefined}
+                          >
+                            {item.label}
+                          </span>
                         </Link>
                       </li>
                     );

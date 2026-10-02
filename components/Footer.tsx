@@ -6,7 +6,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-[#d5ebe8] bg-white">
+    <footer className="relative z-10 border-t border-[#d5ebe8] bg-white">
       <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-2">
         <div>
           <Link href="/" className="inline-flex items-center gap-2.5">

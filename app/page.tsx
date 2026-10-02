@@ -11,9 +11,16 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <div id="home">
-      <HomeAuthUpgrade>
-        <HomePageForGuest />
-      </HomeAuthUpgrade>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 bg-contain bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/blur-mother-child.PNG')" }}
+      />
+      <div className="relative z-10">
+        <HomeAuthUpgrade>
+          <HomePageForGuest />
+        </HomeAuthUpgrade>
+      </div>
     </div>
   );
 }
