@@ -15,8 +15,8 @@ export function Topbar({
   onLogout: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-[#d5ebe8] bg-petal/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-[4.25rem] sm:px-6">
+    <header className="sticky top-0 z-40 border-b border-[#d5ebe8] bg-petal/90 backdrop-blur-md transition-[margin-left] duration-200 ease-out lg:static lg:ml-(--sidebar-offset)">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-[4.25rem] sm:px-6 lg:max-w-none">
         <button
           type="button"
           className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[#d5ebe8] bg-white text-ink shadow-sm lg:hidden"

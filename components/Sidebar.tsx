@@ -11,6 +11,8 @@ import {
   LuHeart,
   LuHouse,
   LuMoon,
+  LuPanelLeftClose,
+  LuPanelLeftOpen,
   LuScale,
   LuSquare,
   LuX,
@@ -50,10 +52,14 @@ function isCurrent(pathname: string, href: string) {
 
 export function Sidebar({
   open,
+  collapsed,
   onClose,
+  onToggleCollapsed,
 }: {
   open: boolean;
+  collapsed: boolean;
   onClose: () => void;
+  onToggleCollapsed: () => void;
 }) {
   const pathname = usePathname();
 
@@ -76,7 +82,7 @@ export function Sidebar({
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(20rem,88vw)] flex-col border-r border-[#d5ebe8] bg-white shadow-xl transition-transform duration-200 lg:top-[4.25rem] lg:z-30 lg:h-[calc(100vh-4.25rem)] lg:w-72 lg:translate-x-0 lg:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(20rem,88vw)] flex-col border-r border-[#d5ebe8] bg-white shadow-xl transition-[transform,width] duration-200 ease-out lg:z-30 lg:w-(--sidebar-offset) lg:translate-x-0 lg:overflow-hidden lg:shadow-none ${
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
@@ -94,11 +100,39 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className="sidebar-scroll min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-5">
+        <div className="hidden shrink-0 border-b border-[#d5ebe8] p-3 lg:block">
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`flex h-11 items-center rounded-full text-sm font-medium text-[#5f7c82] hover:bg-[#e7f6f5] hover:text-ink ${
+              collapsed ? "mx-auto w-11 justify-center" : "w-full gap-3 px-3"
+            }`}
+          >
+            {collapsed ? (
+              <LuPanelLeftOpen className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <>
+                <LuPanelLeftClose className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <div
+          className={`sidebar-scroll min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden py-5 ${
+            collapsed ? "px-3 lg:px-2" : "px-3"
+          }`}
+        >
           <nav className="space-y-5">
             {groups.map((group, index) => (
               <div key={group.title} className={index > 0 ? "border-t border-[#d5ebe8] pt-4" : ""}>
-                <p className="font-bn px-3 text-xs text-[#6d8388]">{group.title}</p>
+                <p className={`font-bn px-3 text-xs text-[#6d8388] ${collapsed ? "lg:sr-only" : ""}`}>
+                  {group.title}
+                </p>
                 <ul className="mt-2 space-y-1">
                   {group.items.map((item) => {
                     const Icon = item.icon;
@@ -108,8 +142,11 @@ export function Sidebar({
                         <Link
                           href={item.href}
                           onClick={onClose}
+                          title={collapsed ? item.label : undefined}
                           aria-current={current ? "page" : undefined}
                           className={`font-bn flex min-h-12 items-center gap-3 rounded-full px-3 text-[15px] font-medium leading-snug ${
+                            collapsed ? "lg:mx-auto lg:w-12 lg:justify-center lg:gap-0 lg:px-0" : ""
+                          } ${
                             current
                               ? "bg-lagoon text-white"
                               : "text-ink hover:bg-[#e7f6f5]"
@@ -119,7 +156,7 @@ export function Sidebar({
                             className={`h-5 w-5 shrink-0 ${current ? "text-white" : "text-[#5f7c82]"}`}
                             aria-hidden="true"
                           />
-                          {item.label}
+                          <span className={collapsed ? "lg:sr-only" : undefined}>{item.label}</span>
                         </Link>
                       </li>
                     );
