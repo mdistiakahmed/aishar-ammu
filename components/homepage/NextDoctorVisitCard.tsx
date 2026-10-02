@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { GuestDashCard } from "@/components/homepage/guest/GuestDashCard";
-import { PencilIcon, StethoscopeIcon } from "@/components/homepage/guest/GuestDashIcons";
+import { PencilIcon } from "@/components/homepage/guest/GuestDashIcons";
 import { saveNextDoctorVisitDate } from "@/lib/care-details";
 import { parseOptionalDate } from "@/lib/dates";
 import {
@@ -113,44 +113,54 @@ export function NextDoctorVisitCard({
     <>
       <GuestDashCard
         title="পরবর্তী ডাক্তার দেখা"
-        headerClassName="bg-[#d5d0de]"
-        titleClassName="text-[#4a4458]"
-        icon={
-          <StethoscopeIcon className="h-3.5 w-3.5 text-[#4a4458] lg:h-4 lg:w-4" />
-        }
+        headerClassName="bg-mist"
+        titleClassName="text-[#1e3a38]"
         headerAction={
           user ? (
             <button
               type="button"
               onClick={openEditor}
               aria-label="Edit"
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[#c2255c] hover:bg-black/5"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[#3d7a76] hover:bg-black/5"
             >
               <PencilIcon className="h-3.5 w-3.5" />
             </button>
           ) : null
         }
         className={className}
-        bodyClassName="min-h-0 flex-1 justify-center gap-0.5 lg:gap-1"
+        bodyClassName="min-h-0 flex-1"
       >
-        <p className="text-[0.65rem] leading-snug text-[#4a4458] lg:text-xs">
-          <span className="font-semibold">সাক্ষাৎ:</span> {when}
-        </p>
-        <p className="text-[0.65rem] leading-snug text-[#6b6680] lg:text-xs">{doctor}</p>
-        {reminder ? (
-          <p className="mt-1 text-[0.65rem] font-semibold leading-snug text-[#4a4458] lg:text-xs">
-            {reminder}
+        <div className="flex min-h-0 flex-1 items-center gap-2 lg:gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="flex items-start gap-1 text-[0.65rem] leading-snug text-ink lg:text-xs">
+            <PinIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-peach" />
+            <span>
+              <span className="font-semibold">সাক্ষাৎ:</span> {when}
+            </span>
           </p>
-        ) : null}
-        {note ? (
-          <p className="mt-1 text-[0.55rem] leading-snug text-[#8a4b32] sm:text-[0.65rem] lg:text-xs">
-            {note}
-          </p>
-        ) : null}
+          <p className="mt-1 text-[0.65rem] leading-snug text-[#3e4a46] lg:text-sm">{doctor}</p>
+          {reminder ? (
+            <p className="mt-1 text-[0.65rem] font-semibold leading-snug text-[#3d7a76] lg:text-xs">
+              {reminder}
+            </p>
+          ) : null}
+          {note ? (
+            <p className="mt-1 text-[0.55rem] leading-snug text-[#8a5a42] sm:text-[0.65rem] lg:text-xs">
+              {note}
+            </p>
+          ) : null}
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/doctor.png"
+          alt=""
+          className="h-8 w-8 shrink-0 rounded-full object-cover object-top lg:h-24 lg:w-24"
+        />
+        </div>
       </GuestDashCard>
 
       {editing && user ? (
-        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-rose-950/40 p-4 sm:items-center">
+        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-ink/40 p-4 sm:items-center">
           <button
             type="button"
             className="absolute inset-0"
@@ -161,18 +171,18 @@ export function NextDoctorVisitCard({
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative z-10 w-full max-w-md rounded-[2rem] border border-rose-100 bg-white p-6 shadow-xl"
+            className="relative z-10 w-full max-w-md rounded-[2rem] border border-[#d5ebe8] bg-white p-6 shadow-xl"
             onSubmit={(event) => {
               event.preventDefault();
               save();
             }}
           >
-            <h2 id={titleId} className="text-xl font-semibold text-rose-950">
+            <h2 id={titleId} className="text-xl font-semibold text-ink">
               Next doctor visit
             </h2>
             <div className="mt-5 flex flex-col gap-4">
               <label className="block min-w-0" htmlFor="next-visit-date">
-                <span className="text-sm font-semibold text-rose-800">
+                <span className="text-sm font-semibold text-ink">
                   Date
                 </span>
                 <input
@@ -185,7 +195,7 @@ export function NextDoctorVisitCard({
                 />
               </label>
               <label className="block min-w-0" htmlFor="next-visit-time">
-                <span className="text-sm font-semibold text-rose-800">
+                <span className="text-sm font-semibold text-ink">
                   Time
                 </span>
                 <input
@@ -197,7 +207,7 @@ export function NextDoctorVisitCard({
                 />
               </label>
               <label className="block min-w-0" htmlFor="next-visit-doctor">
-                <span className="text-sm font-semibold text-rose-800">
+                <span className="text-sm font-semibold text-ink">
                   Doctor name
                 </span>
                 <input
@@ -209,10 +219,10 @@ export function NextDoctorVisitCard({
                   className={fieldClass}
                 />
               </label>
-              {error ? <p className="text-sm text-rose-800">{error}</p> : null}
+              {error ? <p className="text-sm text-[#8a5a42]">{error}</p> : null}
               <button
                 type="submit"
-                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-rose-800 text-sm font-semibold text-white"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-lagoon text-sm font-semibold text-white"
               >
                 Save
               </button>
@@ -224,8 +234,16 @@ export function NextDoctorVisitCard({
   );
 }
 
+function PinIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2.5a6.2 6.2 0 0 0-6.2 6.2c0 4.6 6.2 12.8 6.2 12.8s6.2-8.2 6.2-12.8A6.2 6.2 0 0 0 12 2.5Zm0 8.4a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4Z" />
+    </svg>
+  );
+}
+
 const fieldClass =
-  "mt-1 block h-12 w-full min-w-0 max-w-full rounded-2xl border border-rose-200 bg-petal px-3 text-base text-rose-950 outline-none focus:border-rose-400";
+  "mt-1 block h-12 w-full min-w-0 max-w-full rounded-2xl border border-[#d5ebe8] bg-petal px-3 text-base text-ink outline-none focus:border-lagoon";
 
 function visitReminder(visit: NextDoctorVisit | null, todayKey: string) {
   if (!visit) return "add next doctor visit";

@@ -78,24 +78,24 @@ export function DashboardTrackerCharts() {
 
   return (
     <div className="mt-10! space-y-5 sm:mt-14!">
-      <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+      <section className="rounded-[2rem] border border-[#d5ebe8] bg-white p-6 shadow-sm sm:p-8">
         <div>
-          <h2 className="text-xl font-semibold text-rose-950">Daily sets</h2>
-          <p className="mt-2 text-sm leading-6 text-rose-900/75">
+          <h2 className="text-xl font-semibold text-ink">Daily sets</h2>
+          <p className="mt-2 text-sm leading-6 text-[#5f7c82]">
             Each bar is one day of counted movement sets. The red line marks 10 sets as a general guide.
           </p>
         </div>
         <MovementSetsChart rows={movementRows} chartMax={movementChartMax(movementRows)} />
-        <div className="mt-6 border-t border-rose-100 pt-6">
-          <h3 className="font-bn! text-xl font-semibold leading-snug text-rose-950">
+        <div className="mt-6 border-t border-[#d5ebe8] pt-6">
+          <h3 className="font-bn! text-xl font-semibold leading-snug text-ink">
             গর্ভের শিশুর নড়াচড়া কীভাবে গুনবেন
           </h3>
-          <p className="font-bn! mt-3 text-sm leading-7 text-rose-900/80">
+          <p className="font-bn! mt-3 text-sm leading-7 text-[#3e4a46]">
             গর্ভাবস্থার শেষ দিকে শিশুর লাথি, গড়াগড়ি ও হালকা নড়াচড়া খেয়াল রাখা অনেক মায়ের
             দৈনন্দিন অভ্যাস। এই চার্টে প্রতিটি বার একটি দিনের নড়াচড়ার সেট দেখায়। কাছাকাছি
             সময়ে পরপর হওয়া লাথি বা নড়াকে একটি সেট ধরা হয়, প্রতিটি আলাদা নড়াচড়া নয়।
           </p>
-          <p className="font-bn! mt-3 text-sm leading-7 text-rose-900/80">
+          <p className="font-bn! mt-3 text-sm leading-7 text-[#3e4a46]">
             লাল রেখাটি শুধু সাধারণ ধারণার জন্য ১০টি সেটের একটি নির্দেশক। এটি কোনো চিকিৎসা
             পরীক্ষা নয় এবং ডাক্তার বা মিডওয়াইফের পরামর্শের বিকল্প নয়। নিজের হিসাব রাখতে
             নড়াচড়া ট্র্যাকার খুলুন।
@@ -105,7 +105,7 @@ export function DashboardTrackerCharts() {
             icon={LuBaby}
             title="নড়াচড়া ট্র্যাকার খুলুন"
             subtitle="প্রতিদিনের সেট গুনে রাখুন"
-            className="bg-gradient-to-r from-rose-800 to-rose-500 shadow-[0_18px_40px_-22px_rgba(159,18,57,0.9)]"
+            className="bg-gradient-to-r from-sage-dark to-lagoon shadow-[0_18px_40px_-22px_rgba(47,111,108,0.45)]"
           />
         </div>
       </section>
@@ -150,7 +150,7 @@ export function DashboardTrackerCharts() {
             icon={LuScale}
             title="ওজন ট্র্যাকার খুলুন"
             subtitle="সপ্তাহের ওজন লিখে রাখুন"
-            className="bg-gradient-to-r from-emerald-800 to-emerald-500 shadow-[0_18px_40px_-22px_rgba(6,78,59,0.9)]"
+            className="bg-gradient-to-r from-sage-dark to-lagoon shadow-[0_18px_40px_-22px_rgba(47,111,108,0.45)]"
           />
         </div>
       </section>

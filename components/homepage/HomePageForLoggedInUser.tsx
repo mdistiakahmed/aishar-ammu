@@ -10,7 +10,10 @@ export function HomePageForLoggedInUser({ user }: { user: SessionUser }) {
     <div className="space-y-5">
       <ProfileDetailsCollapsible user={user} />
       <div id="pregnancy-journey" className="scroll-mt-24">
-        <PregnancyDashPreview pregnancyStartDate={user.pregnancyStartDate} />
+        <PregnancyDashPreview
+          pregnancyStartDate={user.pregnancyStartDate}
+          preferredName={user.preferredName || user.name}
+        />
       </div>
       <DashboardTrackerCharts />
     </div>

@@ -135,32 +135,48 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
   const backgroundHidden = editing && sheet;
 
   return (
-    <section className="rounded-[1.75rem] border border-rose-100 bg-white p-4 shadow-sm sm:p-5">
+    <section
+      className={`rounded-[1.75rem] border border-[#d5ebe8] bg-white shadow-sm ${
+        open ? "p-4 sm:p-5" : "px-3 py-2 sm:px-4 sm:py-2"
+      }`}
+    >
       <div
         inert={backgroundHidden ? true : undefined}
-        className="flex items-start justify-between gap-3"
+        className="flex items-center justify-between gap-3"
       >
         <button
           type="button"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={togglePanel}
-          className="flex min-h-11 min-w-0 flex-1 items-start gap-3 text-left"
+          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
         >
-          <IconBubble>
-            <PersonIcon className="h-5 w-5" />
-          </IconBubble>
+          {user.picture ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.picture}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <IconBubble className="h-8 w-8">
+              <PersonIcon className="h-4 w-4" />
+            </IconBubble>
+          )}
           <span className="min-w-0 flex-1">
-            <span className="block text-base font-semibold text-rose-950">Your details</span>
-            <span className="mt-0.5 block text-xs text-rose-400 lg:hidden">
+            <span className="block text-sm font-semibold leading-tight text-ink">
+              Your details
+            </span>
+            <span className="mt-0.5 block text-xs text-[#5f7c82] lg:hidden">
               {added} of {DETAIL_TOTAL} details added
             </span>
-            <span className="mt-0.5 hidden text-xs text-rose-400 lg:block">
+            <span className="mt-0.5 hidden text-xs text-[#5f7c82] lg:block">
               Keep your information up to date
             </span>
             {open ? (
               <span
-                className="mt-2 block h-1.5 overflow-hidden rounded-full bg-rose-100 lg:hidden"
+                className="mt-2 block h-1.5 overflow-hidden rounded-full bg-[#d7eeed] lg:hidden"
                 role="progressbar"
                 aria-valuenow={added}
                 aria-valuemin={0}
@@ -168,7 +184,7 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
                 aria-label={`${added} of ${DETAIL_TOTAL} details added`}
               >
                 <span
-                  className="block h-full rounded-full bg-rose-400 transition-[width] duration-300"
+                  className="block h-full rounded-full bg-lagoon transition-[width] duration-300"
                   style={{ width: `${(added / DETAIL_TOTAL) * 100}%` }}
                 />
               </span>
@@ -181,7 +197,7 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
             type="button"
             aria-expanded={editing}
             onClick={() => (editing ? closeEditor() : openEditor())}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-rose-50 px-3 text-sm font-semibold text-rose-500 hover:bg-rose-100"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[#e7f6f5] px-3 text-sm font-semibold text-sage hover:bg-[#d7eeed]"
           >
             <PencilIcon className="h-3.5 w-3.5" />
             Edit
@@ -193,7 +209,7 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
           aria-controls={panelId}
           aria-label={open ? "Hide your details" : "Show your details"}
           onClick={togglePanel}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e7f6f5] text-sage hover:bg-[#d7eeed]"
         >
           <ChevronIcon
             className={`h-4 w-4 transition-transform ${open ? "-rotate-90" : "rotate-90"}`}
@@ -243,7 +259,7 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
       {editing ? (
         <button
           type="button"
-          className="fixed inset-0 z-60 bg-rose-950/40 lg:hidden"
+          className="fixed inset-0 z-60 bg-ink/40 lg:hidden"
           aria-label="Close editor"
           onClick={closeEditor}
         />
@@ -257,19 +273,19 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
           role={sheet ? "dialog" : undefined}
           aria-modal={sheet ? true : undefined}
           aria-labelledby={titleId}
-          className="fixed inset-x-0 bottom-0 z-70 max-h-[min(88svh,44rem)] overflow-y-auto rounded-t-[1.75rem] border border-rose-100 bg-white px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl lg:static lg:z-auto lg:mt-4 lg:max-h-none lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+          className="fixed inset-x-0 bottom-0 z-70 max-h-[min(88svh,44rem)] overflow-y-auto rounded-t-[1.75rem] border border-[#d5ebe8] bg-white px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl lg:static lg:z-auto lg:mt-4 lg:max-h-none lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
         >
           <h2 id={titleId} className="sr-only">
             Edit your details
           </h2>
-          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-rose-200 lg:hidden" />
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#c5e4e2] lg:hidden" />
           <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
-            <p className="text-lg font-semibold text-rose-950">Edit your details</p>
+            <p className="text-lg font-semibold text-ink">Edit your details</p>
             <button
               type="button"
               onClick={closeEditor}
               aria-label="Close"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-rose-400 hover:bg-rose-50"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#5f7c82] hover:bg-[#e7f6f5]"
             >
               <CloseIcon className="h-5 w-5" />
             </button>
@@ -329,14 +345,14 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
               <button
                 type="submit"
                 disabled={pending}
-                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-rose-400 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 disabled:opacity-70 lg:w-44"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-lagoon text-sm font-semibold text-white shadow-sm hover:bg-sage-dark disabled:opacity-70 lg:w-44"
               >
                 {pending ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={closeEditor}
-                className="inline-flex h-11 w-full items-center justify-center text-sm font-semibold text-rose-400 hover:text-rose-600 lg:w-auto lg:px-4"
+                className="inline-flex h-11 w-full items-center justify-center text-sm font-semibold text-[#5f7c82] hover:text-sage lg:w-auto lg:px-4"
               >
                 Cancel
               </button>
@@ -348,18 +364,18 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
       <div inert={backgroundHidden ? true : undefined}>
       <Link
         href="#pregnancy-journey"
-        className="mt-4 flex items-center gap-3 rounded-2xl bg-rose-50 px-3.5 py-3.5 text-left transition hover:bg-rose-100/80"
+        className="mt-4 flex items-center gap-3 rounded-2xl bg-[#e7f6f5] px-3.5 py-3.5 text-left transition hover:bg-[#d7eeed]/80"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-rose-400">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#5f7c82]">
           <JourneyIcon className="h-6 w-6" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-rose-800">Your pregnancy journey</span>
-          <span className="mt-0.5 block text-xs leading-5 text-rose-400">
+          <span className="block text-sm font-semibold text-ink">Your pregnancy journey</span>
+          <span className="mt-0.5 block text-xs leading-5 text-[#5f7c82]">
             Track your progress, get helpful tips and care reminders.
           </span>
         </span>
-        <ChevronIcon className="h-4 w-4 shrink-0 text-rose-300" />
+        <ChevronIcon className="h-4 w-4 shrink-0 text-[#8aada8]" />
       </Link>
       </div>
       </div>
@@ -369,7 +385,7 @@ export function ProfileDetailsCollapsible({ user }: { user: SessionUser }) {
 }
 
 const controlClass =
-  "mt-1 block h-9 w-full min-w-0 bg-transparent text-base font-semibold text-rose-800 outline-none lg:text-sm";
+  "mt-1 block h-9 w-full min-w-0 bg-transparent text-base font-semibold text-ink outline-none lg:text-sm";
 
 function DetailTile({
   label,
@@ -380,7 +396,7 @@ function DetailTile({
   onEdit,
   badge,
   className = "",
-  bubbleClassName = "bg-rose-50",
+  bubbleClassName = "bg-[#e7f6f5]",
 }: {
   label: string;
   value: string;
@@ -396,30 +412,30 @@ function DetailTile({
     <button
       type="button"
       onClick={onEdit}
-      className={`flex h-full min-h-16 w-full items-center gap-3 rounded-2xl border border-rose-100 bg-white px-3 py-3 text-left shadow-sm transition hover:border-rose-200 ${className}`}
+      className={`flex h-full min-h-16 w-full items-center gap-3 rounded-2xl border border-[#d5ebe8] bg-white px-3 py-3 text-left shadow-sm transition hover:border-[#b7d9d6] ${className}`}
     >
       <span
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-rose-400 ${bubbleClassName}`}
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#5f7c82] ${bubbleClassName}`}
       >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-xs font-medium text-rose-400">{label}</span>
+        <span className="block text-xs font-medium text-[#5f7c82]">{label}</span>
         <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
           <span
-            className={`min-w-0 text-sm font-semibold break-words ${empty ? "font-medium text-rose-300" : "text-rose-800"}`}
+            className={`min-w-0 text-sm font-semibold break-words ${empty ? "font-medium text-[#8aada8]" : "text-ink"}`}
           >
             {value}
           </span>
           {badge ? (
-            <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-rose-600">
+            <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-sage">
               {badge}
             </span>
           ) : null}
         </span>
       </span>
       {affordance === "none" ? null : (
-        <span className="shrink-0 text-rose-300" aria-hidden="true">
+        <span className="shrink-0 text-[#8aada8]" aria-hidden="true">
           {affordance === "pencil" ? (
             <PencilIcon className="h-4 w-4" />
           ) : (
@@ -449,23 +465,23 @@ function EditorField({
   return (
     <label
       htmlFor={id}
-      className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white px-3 py-3 shadow-sm"
+      className="flex items-center gap-3 rounded-2xl border border-[#d5ebe8] bg-white px-3 py-3 shadow-sm"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-400">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e7f6f5] text-[#5f7c82]">
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-rose-400">
+        <span className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-[#5f7c82]">
           {label}
           {badge ? (
-            <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-600">
+            <span className="rounded-full bg-[#e7f6f5] px-2 py-0.5 text-[11px] font-semibold text-sage">
               {badge}
             </span>
           ) : null}
         </span>
         {children}
       </span>
-      <span className="pointer-events-none shrink-0 text-rose-300" aria-hidden="true">
+      <span className="pointer-events-none shrink-0 text-[#8aada8]" aria-hidden="true">
         <span className="lg:hidden">
           <ChevronIcon className="h-4 w-4" />
         </span>
@@ -481,9 +497,17 @@ function EditorField({
   );
 }
 
-function IconBubble({ children }: { children: ReactNode }) {
+function IconBubble({
+  children,
+  className = "h-11 w-11",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-400">
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-full bg-[#e7f6f5] text-[#5f7c82] ${className}`}
+    >
       {children}
     </span>
   );

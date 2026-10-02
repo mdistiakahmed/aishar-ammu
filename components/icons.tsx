@@ -28,12 +28,12 @@ export function GoogleIcon({ className }: IconProps) {
 export function LogoMark({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <circle cx="20" cy="20" r="19" fill="#F8DDE4" />
+      <circle cx="20" cy="20" r="19" fill="#d7eeed" />
       <path
         d="M20 29c-5.4-3.4-8.8-6.7-8.8-10.4A4.7 4.7 0 0 1 20 15.2a4.7 4.7 0 0 1 8.8 3.4C28.8 22.3 25.4 25.6 20 29Z"
-        fill="#C45C7A"
+        fill="#f4b48a"
       />
-      <circle cx="26.2" cy="13.2" r="3.1" fill="#E8B86D" />
+      <circle cx="26.2" cy="13.2" r="3.1" fill="#5eb8b4" />
     </svg>
   );
 }

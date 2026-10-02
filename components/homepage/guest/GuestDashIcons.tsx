@@ -40,6 +40,17 @@ export function PencilIcon({ className }: IconProps) {
   );
 }
 
+export function FlameIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 3s3.2 3.4 3.2 6.2c0 1.3-.6 2.2-1.4 2.8.2-1.8-.4-3-1.8-4.4C10.4 10 9 11.6 9 13.6 9 16.6 10.8 19 13 20.2 9.6 19.2 6.5 16.4 6.5 13.2 6.5 9.2 9.4 5.6 12 3Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function CrescentIcon({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">

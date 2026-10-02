@@ -3,11 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { NextDoctorVisitCard } from "@/components/homepage/NextDoctorVisitCard";
-import { PausingGif } from "@/components/homepage/PausingGif";
 import { GuestDashCard } from "@/components/homepage/guest/GuestDashCard";
 import {
   CrescentIcon,
-  PencilIcon,
+  FlameIcon,
 } from "@/components/homepage/guest/GuestDashIcons";
 import babyWeekSize from "@/lib/baby-week-size.json";
 import pregnancyWeekByWeek from "@/lib/pregnancy-week-by-week.json";
@@ -91,14 +90,6 @@ function timeOfDayGreeting(date: Date) {
   return "শুভ সন্ধ্যা";
 }
 
-function trimesterProgress(week: number, day: number, trimester: 1 | 2 | 3) {
-  const totalDays = Math.max(0, week) * 7 + Math.max(0, day);
-  if (trimester === 1) return Math.min(1, totalDays / (14 * 7));
-  if (trimester === 2)
-    return Math.min(1, Math.max(0, totalDays - 14 * 7) / (14 * 7));
-  return Math.min(1, Math.max(0, totalDays - 28 * 7) / (12 * 7 + 6));
-}
-
 function formatWeightBn(weightGrams: number) {
   if (weightGrams < 1000) return `${toBnDigits(weightGrams)} গ্রাম`;
   const kg = weightGrams / 1000;
@@ -164,11 +155,14 @@ function CurrentWeekIcon({ className }: { className?: string }) {
 export function PregnancyDashPreview({
   fillViewport = false,
   pregnancyStartDate,
+  preferredName,
 }: {
   /** Guest landing locks to the viewport; logged-in pages size to content. */
   fillViewport?: boolean;
   /** Saved start date. Omit for the signed-out preview (29 weeks, 2 days). */
   pregnancyStartDate?: string | null;
+  /** Name shown after the time-of-day greeting. Omit for the signed-out preview. */
+  preferredName?: string | null;
 }) {
   const [now, setNow] = useState(() => new Date());
 
@@ -209,7 +203,6 @@ export function PregnancyDashPreview({
   const babySize = sizeForWeek(viewedWeek);
   const viewedWeekLabel = toBnDigits(viewedWeek);
   const weightLabel = formatWeightBn(babySize.weightGrams);
-  const progress = trimesterProgress(viewedWeek, snapshot.day, viewedTrimester);
   const ageLabel = `${toBnDigits(viewedWeek)} সপ্তাহ ${toBnDigits(snapshot.day)} দিন`;
   const visitWhen = previewVisitLabel(now);
 
@@ -220,30 +213,30 @@ export function PregnancyDashPreview({
   return (
     <div className={shellClass}>
       <header className="shrink-0 px-0.5">
-        <h1 className="font-bn text-xl font-semibold leading-tight tracking-tight text-[#3f4634] sm:text-2xl lg:text-4xl">
-          <span>{timeOfDayGreeting(now)}, প্রিয় আম্মু </span>
-          <span className="inline-block text-rose-300" aria-hidden="true">
-            <svg
-              className="inline h-4 w-4 align-[-0.1em] lg:h-6 lg:w-6"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M12 19.4s-6.6-4.1-8.4-8A4.4 4.4 0 0 1 12 7.6a4.4 4.4 0 0 1 8.4 3.8c-1.8 3.9-8.4 8-8.4 8Z" />
-            </svg>
+        <h1 className="font-bn text-lg font-semibold leading-tight tracking-tight text-ink sm:text-xl lg:text-2xl">
+          <span>
+            {timeOfDayGreeting(now)}
+            {preferredName?.trim() ? `, ${preferredName.trim()}` : ""}
           </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt=""
+            className="ml-1.5 inline h-5 w-5 rounded-full object-cover align-[-0.15em] sm:h-6 sm:w-6 lg:h-7 lg:w-7"
+          />
         </h1>
-        <p className="mt-0.5 text-[0.7rem] text-[#6b735f] sm:text-sm lg:mt-1.5 lg:text-base">
+        <p className="mt-0.5 text-[0.65rem] text-[#5f7c82] sm:text-xs lg:mt-1 lg:text-sm">
           {formatDisplayDate(now)}
         </p>
       </header>
 
       <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-1.5">
-        <p className="mr-0.5 text-[0.625rem] font-semibold text-[#3f4634] sm:text-sm">
+        <p className="mr-0.5 text-[0.625rem] font-semibold text-ink sm:text-sm">
           সপ্তাহ {viewedWeekLabel}
         </p>
         <button
           type="button"
-          className="inline-flex h-6 items-center gap-0.5 rounded-full border border-[#c5d4c2] bg-white px-1.5 text-[0.625rem] font-semibold leading-none text-[#3f4634] disabled:opacity-40 sm:h-8 sm:gap-1 sm:px-2.5 sm:text-xs"
+          className="inline-flex h-6 items-center gap-0.5 rounded-full border border-[#c5ddd9] bg-white px-1.5 text-[0.625rem] font-semibold leading-none text-ink disabled:opacity-40 sm:h-8 sm:gap-1 sm:px-2.5 sm:text-xs"
           disabled={viewedWeek <= CONTENT_MIN_WEEK}
           onClick={() => setViewedWeek((week) => stepContentWeek(week, -1))}
         >
@@ -254,8 +247,8 @@ export function PregnancyDashPreview({
           type="button"
           className={`inline-flex h-6 items-center gap-0.5 rounded-full px-1.5 text-[0.625rem] font-semibold leading-none sm:h-8 sm:gap-1 sm:px-2.5 sm:text-xs ${
             isCurrentWeek
-              ? "bg-[#769471] text-white"
-              : "border border-[#c5d4c2] bg-white text-[#3f4634]"
+              ? "bg-dusk text-white"
+              : "border border-[#c5ddd9] bg-white text-ink"
           }`}
           aria-pressed={isCurrentWeek}
           onClick={() => setViewedWeek(snapshot.week)}
@@ -265,7 +258,7 @@ export function PregnancyDashPreview({
         </button>
         <button
           type="button"
-          className="inline-flex h-6 items-center gap-0.5 rounded-full border border-[#c5d4c2] bg-white px-1.5 text-[0.625rem] font-semibold leading-none text-[#3f4634] disabled:opacity-40 sm:h-8 sm:gap-1 sm:px-2.5 sm:text-xs"
+          className="inline-flex h-6 items-center gap-0.5 rounded-full bg-peach px-1.5 text-[0.625rem] font-semibold leading-none text-[#3f2a22] disabled:opacity-40 sm:h-8 sm:gap-1 sm:px-2.5 sm:text-xs"
           disabled={viewedWeek >= CONTENT_MAX_WEEK}
           onClick={() => setViewedWeek((week) => stepContentWeek(week, 1))}
         >
@@ -280,38 +273,29 @@ export function PregnancyDashPreview({
       <div className="grid grid-cols-[1.2fr_1fr_1fr] items-start gap-1.5 sm:gap-2.5 lg:grid-cols-[1.25fr_1fr_1fr] lg:gap-4 xl:gap-5">
         <GuestDashCard
           title="আজকের বাবুর বয়স"
-          headerClassName="bg-[#d4846a]"
+          headerClassName="bg-dusk"
           className={`col-start-1 row-start-1 self-start ${todayCardHeight}`}
-          bodyClassName="min-h-0 flex-1 items-center justify-center gap-1 text-center lg:px-5"
+          bodyClassName="relative min-h-0 flex-1 items-center justify-center gap-1 text-center lg:px-5"
         >
           <div className="w-full">
-            <p className="text-base font-semibold leading-tight text-[#3f4634] sm:text-xl lg:text-3xl">
+            <p className="text-base font-semibold leading-tight text-ink sm:text-xl lg:text-3xl">
               {ageLabel}
             </p>
-            <div
-              className="mx-auto mt-1.5 h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-[#e8efe4] sm:mt-2 lg:h-2.5 lg:max-w-xs"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(progress * 100)}
-              aria-label={`${TRIMESTER_LABEL[viewedTrimester]} অগ্রগতি`}
-            >
-              <div
-                className="h-full rounded-full bg-[#769471] transition-[width] duration-500 ease-out"
-                style={{
-                  width: `${Math.max(10, Math.round(progress * 100))}%`,
-                }}
-              />
-            </div>
-            <p className="mt-1 text-[0.6rem] text-[#6b735f] sm:text-[0.7rem] lg:text-sm">
+            <p className="mt-1 text-[0.6rem] text-[#5f7c82] sm:text-[0.7rem] lg:text-sm">
               {TRIMESTER_LABEL[viewedTrimester]}
             </p>
             {otherWeekNote ? (
-              <p className="mt-1.5 text-[0.55rem] leading-snug text-[#8a4b32] sm:text-[0.65rem] lg:text-xs">
+              <p className="mt-1.5 text-[0.55rem] leading-snug text-[#8a5a42] sm:text-[0.65rem] lg:text-xs">
                 {otherWeekNote}
               </p>
             ) : null}
           </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/baby.png"
+            alt=""
+            className="pointer-events-none absolute bottom-1 right-1 h-16 w-14 object-contain sm:h-20 sm:w-16 lg:bottom-2 lg:right-2 lg:h-24 lg:w-20"
+          />
         </GuestDashCard>
 
         <GuestDashCard
@@ -320,20 +304,35 @@ export function PregnancyDashPreview({
               ? "এই সপ্তাহের বাবুর বিকাশ"
               : `সপ্তাহ ${viewedWeekLabel}-এর বাবুর বিকাশ`
           }
-          headerClassName="bg-[#7d9a78]"
+          headerClassName="bg-dusk"
           className="row-start-2 min-h-52 max-lg:col-span-3 self-start lg:col-start-1 lg:row-start-2 lg:min-h-72"
-          bodyClassName="items-center gap-1.5 text-center sm:gap-2 lg:gap-3 lg:px-5 lg:py-4"
+          bodyClassName="gap-3 lg:px-5 lg:py-4"
         >
-          <div className="flex shrink-0 items-center justify-center">
-            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-[#fff6f1] shadow-inner ring-4 ring-white sm:h-32 sm:w-32 lg:h-36 lg:w-36 lg:ring-[6px]">
-              <PausingGif
-                src="/girl-gif-5.gif"
-                className="h-full w-full object-cover"
-              />
-            </div>
+          <div
+            className="flex items-end justify-center gap-1 sm:gap-3"
+            aria-hidden="true"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/baby-fingers.png"
+              alt=""
+              className="h-16 w-14 object-contain sm:h-20 sm:w-16 lg:h-24 lg:w-20"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/baby.png"
+              alt=""
+              className="h-20 w-16 object-contain sm:h-24 sm:w-20 lg:h-28 lg:w-24"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/baby-toe.png"
+              alt=""
+              className="h-16 w-14 object-contain sm:h-20 sm:w-16 lg:h-24 lg:w-20"
+            />
           </div>
 
-          <ul className="w-full space-y-1 px-0.5 text-left text-md leading-snug text-[#5c6554] lg:leading-6">
+          <ul className="w-full space-y-1 px-0.5 text-left text-md leading-snug text-[#3e4a46] lg:leading-6">
             {weekGuide.yourBaby.map((line, index) => (
               <li
                 key={`${weekGuide.week}-baby-${index}`}
@@ -354,11 +353,12 @@ export function PregnancyDashPreview({
               ? "এই সপ্তাহের বাবুর সাইজ"
               : `সপ্তাহ ${viewedWeekLabel}-এর বাবুর সাইজ`
           }
-          headerClassName="bg-[#8c84b0]"
+          headerClassName="bg-mint"
+          titleClassName="text-[#1e3a38]"
           className="col-start-2 row-start-1 h-52 self-start lg:h-64"
           bodyClassName="min-h-0 flex-1 items-center justify-center gap-1 text-center lg:gap-2"
         >
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f4f0fa] sm:h-14 sm:w-14 lg:h-20 lg:w-20">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center sm:h-20 sm:w-20 lg:h-24 lg:w-24">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/baby-size/${babySize.image}`}
@@ -366,14 +366,21 @@ export function PregnancyDashPreview({
               className="h-full w-full object-contain"
             />
           </div>
-          <p className="text-[0.58rem] font-medium leading-snug text-[#5c6554] sm:text-[0.7rem] lg:text-sm">
+          <p className="text-[0.58rem] font-medium leading-snug text-[#3e4a46] sm:text-[0.7rem] lg:text-sm">
             বাবুর আকার{" "}
-            <span className="font-bold text-[#3f4634]">{babySize.fruit}</span>{" "}
-            এর সমান
+            <span className="font-bold text-ink">{babySize.fruit}</span> এর সমান
           </p>
-          <p className="text-[0.58rem] font-medium leading-snug text-[#5c6554] sm:text-[0.7rem] lg:text-sm">
-            বাবুর ওজন{" "}
-            <span className="font-bold text-[#3f4634]">{weightLabel}</span>
+          <p className="inline-flex items-center justify-center gap-1.5 text-[0.58rem] font-medium leading-snug text-[#3e4a46] sm:text-[0.7rem] lg:text-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/weight-machine.png"
+              alt=""
+              className="h-7 w-7 shrink-0 object-contain sm:h-8 sm:w-8 lg:h-9 lg:w-9"
+            />
+            <span>
+              বাবুর ওজন{" "}
+              <span className="font-bold text-ink">{weightLabel}</span>
+            </span>
           </p>
         </GuestDashCard>
 
@@ -386,37 +393,55 @@ export function PregnancyDashPreview({
         <div className="contents lg:col-span-2 lg:col-start-2 lg:row-start-2 lg:flex lg:flex-col lg:gap-4 lg:self-stretch xl:gap-5">
           <GuestDashCard
             title="মায়ের শারীরিক/ মানসিক পরিবর্তন"
-            headerClassName="bg-[#e8dcc8]"
-            titleClassName="text-[#5c5346]"
+            headerClassName="bg-peach"
+            titleClassName="text-[#4a3428]"
             icon={
-              <PencilIcon className="h-3.5 w-3.5 text-[#5c5346] lg:h-4 lg:w-4" />
+              <FlameIcon className="h-3.5 w-3.5 text-[#4a3428] lg:h-4 lg:w-4" />
             }
-            className="row-start-3 min-h-40 max-lg:col-span-3 lg:min-h-44 lg:flex-1"
-            bodyClassName="flex-1 justify-center"
+            className="row-start-3 min-h-40 max-lg:col-span-3 lg:h-auto lg:min-h-44 lg:flex-none"
+            bodyClassName="shrink-0 justify-start pb-3 lg:pb-4"
           >
-            <ol className="space-y-1 text-md leading-snug text-[#5c5346] lg:space-y-1.5 lg:leading-6">
-              {weekGuide.yourBody.map((line, index) => (
-                <li
-                  key={`${weekGuide.week}-body-${index}`}
-                  className="flex gap-1.5"
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 flex-1 flex-col">
+                <ol className="space-y-1 text-md leading-snug text-[#4a3428] lg:space-y-1.5 lg:leading-6">
+                  {weekGuide.yourBody.map((line, index) => (
+                    <li
+                      key={`${weekGuide.week}-body-${index}`}
+                      className="flex gap-1.5"
+                    >
+                      <span className="font-semibold tabular-nums">
+                        {toBnDigits(index + 1)}.
+                      </span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ol>
+                <Link
+                  href="#"
+                  onClick={(event) => event.preventDefault()}
+                  className="mt-3 inline-flex h-11 items-center gap-1.5 self-end rounded-full bg-peach px-4 text-sm font-semibold text-[#4a3428] shadow-sm transition hover:bg-[#e9a67a]"
                 >
-                  <span className="font-semibold tabular-nums">
-                    {toBnDigits(index + 1)}.
-                  </span>
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ol>
+                  Details
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/baby-with-mother.png"
+                alt="A mother resting beside her baby"
+                className="h-28 w-full shrink-0 rounded-2xl object-cover sm:h-32 sm:w-40 lg:h-36 lg:w-44"
+              />
+            </div>
           </GuestDashCard>
 
           <GuestDashCard
             title="সাজেশনস"
-            headerClassName="bg-[#d7e4d4]"
-            titleClassName="text-[#3f4634]"
+            headerClassName="bg-mint"
+            titleClassName="text-[#1e3a38]"
             className="row-start-4 min-h-40 max-lg:col-span-3 lg:min-h-44 lg:flex-1"
             bodyClassName="flex-1 justify-center"
           >
-            <ol className="space-y-1 text-md leading-snug text-[#3f4634] lg:space-y-1.5 lg:leading-6">
+            <ol className="space-y-1 text-md leading-snug text-ink lg:space-y-1.5 lg:leading-6">
               {weekGuide.suggestionsThisWeek.map((line, index) => (
                 <li
                   key={`${weekGuide.week}-suggestion-${index}`}
@@ -432,19 +457,19 @@ export function PregnancyDashPreview({
           </GuestDashCard>
 
           <GuestDashCard
-            title="ইসলামি দোয়া"
-            headerClassName="bg-[#ddd6cb]"
-            titleClassName="text-[#5c5346]"
+            title="আজকের দোয়া"
+            headerClassName="bg-mist"
+            titleClassName="text-[#1e3a38]"
             icon={
-              <CrescentIcon className="h-3.5 w-3.5 text-[#5c5346] lg:h-4 lg:w-4" />
+              <CrescentIcon className="h-3.5 w-3.5 text-[#1e3a38] lg:h-4 lg:w-4" />
             }
             className="row-start-5 min-h-40 max-lg:col-span-3 lg:min-h-44 lg:flex-1"
             bodyClassName="flex-1 justify-center gap-1 lg:gap-2"
           >
-            <p className="text-md leading-snug text-[#4a4458] lg:leading-6">
+            <p className="text-md leading-snug text-ink lg:leading-6">
               {PREVIEW_DUA.text}
             </p>
-            <p className="text-xs text-[#8a8498]">— {PREVIEW_DUA.source}</p>
+            <p className="text-xs text-[#5f7c82]">— {PREVIEW_DUA.source}</p>
             <Link
               href="/duas"
               className="mt-auto text-xs font-semibold text-sage underline-offset-2 hover:underline"
